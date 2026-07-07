@@ -76,5 +76,12 @@
     "nextStepsDesc": "Your report is saved locally. If offline, it will automatically synchronize when connection is restored. Local authorities will review details.",
     "newReportButton": "Submit Another Report",
     "offlineNotice": "You are currently offline. The report is queued locally."
+  },
+  "pwa": {
+    "installPrompt": "Add Nagrik to your home screen for quick access.",
+    "installButton": "Install",
+    "dismiss": "Not now",
+    "offline": "You're offline. Previously visited content is still available.",
+    "offlineShort": "Offline"
   }
 }
