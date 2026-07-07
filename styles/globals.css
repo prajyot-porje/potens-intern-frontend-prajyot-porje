@@ -43,6 +43,9 @@
   --body-regular-size: 0.875rem;
   --ui-label-size: 0.875rem;
   --caption-size: 0.75rem;
+
+  /* Button Hover Colors */
+  --primary-hover: #24242B;
 }
 
 @media (min-width: 768px) {
@@ -69,7 +72,7 @@
   --border-strong: #3F3F48;
   --text-primary: #F2F2F4;
   --text-secondary: #A8A8B3;
-  --text-tertiary: #7C7C88;
+  --text-tertiary: #878794;
 
   /* Semantic - Dark */
   --error: #E8776D;
@@ -83,6 +86,9 @@
   /* Focus Indicator Ring */
   --focus-ring-color: #3F3F48;
   --focus-ring-shadow: 0 0 0 2px #0A0A0C, 0 0 0 4px #3F3F48;
+
+  /* Button Hover Colors */
+  --primary-hover: #E2E2E6;
 }
 
 @theme {
@@ -126,6 +132,7 @@
   --font-body: var(--font-instrument), sans-serif;
   --font-marathi: var(--font-hind), sans-serif;
   --font-mono: var(--font-mono), monospace;
+  --color-primary-hover: var(--primary-hover);
 }
 
 /* Base resets & focus state system */
@@ -168,7 +175,7 @@ input:focus, textarea:focus, select:focus, button:focus {
 }
 
 /* Dynamic text line length limits to avoid visual strain */
-p, span, li {
+p, li {
   max-width: 60ch;
 }
 
@@ -194,8 +201,10 @@ p, span, li {
 
 @media (prefers-reduced-motion: reduce) {
   .animate-slide-down,
-  .animate-slide-up {
-    animation: none;
+  .animate-slide-up,
+  .animate-ping,
+  .animate-pulse {
+    animation: none !important;
   }
 }
 

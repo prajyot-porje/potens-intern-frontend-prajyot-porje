@@ -4,8 +4,9 @@ import React, { useEffect, useState } from "react";
 import { usePathname, useRouter } from "next/navigation";
 import { Sun, Moon, Languages, Activity, ArrowLeft } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
-import { useTheme } from "../../hooks/useTheme";
-import { useLanguage } from "../../hooks/useLanguage";
+import { useTheme } from "../../lib/theme";
+import { useLanguage } from "../../lib/i18n";
+import { initPWA } from "../../lib/pwa";
 import { Heading, ParagraphText, MonoText } from "../../components/typography";
 import { Button, IconWrapper } from "../../components/primitives";
 import { OfflineBanner, InstallPrompt } from "../../components/feedback";
@@ -20,6 +21,7 @@ export default function FlowLayout({ children }: { children: React.ReactNode }) 
   useEffect(() => {
     Promise.resolve().then(() => {
       setMounted(true);
+      initPWA();
     });
   }, []);
 
@@ -111,7 +113,6 @@ export default function FlowLayout({ children }: { children: React.ReactNode }) 
             variant="secondary"
             className="!min-h-[48px] !h-[48px] !px-space-4 text-xs flex items-center gap-space-1"
             onClick={cycleLanguage}
-            aria-label="Toggle language"
           >
             <IconWrapper icon={Languages} className="h-3.5 w-3.5" />
             <span className="font-uiLabel">{t("common.toggleLanguage")}</span>

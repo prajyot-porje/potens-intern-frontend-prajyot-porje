@@ -2,26 +2,15 @@
 
 import React, { useState, useEffect, Suspense } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
-import { Road, Trash2, Droplet, Lightbulb, ShieldAlert, HelpCircle, ArrowRight } from "lucide-react";
-import { useLanguage } from "@/hooks/useLanguage";
+import { ArrowRight, HelpCircle } from "lucide-react";
+import { useLanguage } from "@/lib/i18n";
 import { useLocalStorage } from "@/hooks/useLocalStorage";
 import { DisplayText, Heading, ParagraphText } from "@/components/typography";
 import { Button, Card, Section, IconWrapper } from "@/components/primitives";
 import { CATEGORY_LIST } from "@/lib/utils/constants";
 import { ReducedMotionWrapper } from "@/components/motion";
 import { cn } from "@/lib/utils";
-
-const iconMap: Record<
-  string,
-  React.ComponentType<React.SVGProps<SVGSVGElement> & { strokeWidth?: number }>
-> = {
-  Road,
-  Trash2,
-  Droplet,
-  Lightbulb,
-  ShieldAlert,
-  HelpCircle,
-};
+import { iconMap } from "@/components/icons";
 
 function CategorySkeleton() {
   return (

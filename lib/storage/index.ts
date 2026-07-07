@@ -24,11 +24,9 @@ export function getSubmissions(): Submission[] {
     if (Array.isArray(parsed)) {
       return parsed;
     }
-    console.warn("Submissions in localStorage is not an array, clearing corrupted data.");
     window.localStorage.removeItem(STORAGE_KEYS.SUBMISSIONS);
     return [];
-  } catch (error) {
-    console.error("Error reading submissions from localStorage, clearing corrupted data:", error);
+  } catch {
     try {
       window.localStorage.removeItem(STORAGE_KEYS.SUBMISSIONS);
     } catch {}
@@ -52,8 +50,8 @@ export function saveSubmission(submission: Submission): void {
     }
 
     window.localStorage.setItem(STORAGE_KEYS.SUBMISSIONS, JSON.stringify(current));
-  } catch (error) {
-    console.error("Error saving submission to localStorage:", error);
+  } catch {
+    // Fail silently in production
   }
 }
 
@@ -74,8 +72,8 @@ export function deleteSubmission(id: string): void {
     const current = getSubmissions();
     const filtered = current.filter((item) => item.id !== id);
     window.localStorage.setItem(STORAGE_KEYS.SUBMISSIONS, JSON.stringify(filtered));
-  } catch (error) {
-    console.error("Error deleting submission from localStorage:", error);
+  } catch {
+    // Fail silently in production
   }
 }
 
@@ -106,8 +104,7 @@ export function syncQueuedSubmissions(): number {
     }
 
     return syncCount;
-  } catch (error) {
-    console.error("Error syncing queued submissions:", error);
+  } catch {
     return 0;
   }
 }
