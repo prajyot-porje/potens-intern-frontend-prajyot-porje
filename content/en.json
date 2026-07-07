@@ -8,7 +8,8 @@
     "cancel": "Cancel",
     "loading": "Processing...",
     "save": "Save",
-    "continue": "Continue"
+    "continue": "Continue",
+    "change": "Change"
   },
   "category": {
     "title": "Select Issue Category",
@@ -29,16 +30,19 @@
   "form": {
     "title": "Report Details",
     "descriptionLabel": "Describe the Issue",
+    "descriptionHelper": "Mention nearby landmarks, street names, or specific locations to help authorities locate the issue.",
     "descriptionPlaceholder": "Provide details like landmarks or specific problems (min 10 chars, max 500)...",
     "charRemaining": "{count} characters remaining",
     "photoLabel": "Attach Photo (Optional)",
     "addPhoto": "Take Photo / Upload",
+    "dragDropHint": "Drag & drop an image here, or tap to choose",
     "removePhoto": "Remove Photo",
     "voiceLabel": "Voice Input (Speak)",
     "voiceListening": "Listening... Speak clearly now.",
     "voiceTapToSpeak": "Tap mic to dictate description",
     "voiceNotSupported": "Voice input is not supported in this browser.",
-    "voiceError": "Voice error occurred. Please type manually."
+    "voiceError": "Voice error occurred. Please type manually.",
+    "voiceMockText": "There is a large pothole near the main intersection causing traffic delays."
   },
   "validation": {
     "emptyDescription": "Description cannot be empty.",
