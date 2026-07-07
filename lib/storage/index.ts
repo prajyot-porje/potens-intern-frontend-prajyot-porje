@@ -9,6 +9,7 @@ export interface Submission {
   createdAt: string;               // ISO 8601 string timestamp
   status: "queued" | "submitted";  // Offline-first queue state
   language: "en" | "mr";           // Active language during submission
+  synchronizedAt?: string;         // Time when offline report was synced
 }
 
 /**
@@ -91,7 +92,11 @@ export function syncQueuedSubmissions(): number {
     const updated = current.map((item) => {
       if (item.status === "queued") {
         syncCount++;
-        return { ...item, status: "submitted" as const };
+        return { 
+          ...item, 
+          status: "submitted" as const, 
+          synchronizedAt: new Date().toISOString() 
+        };
       }
       return item;
     });
