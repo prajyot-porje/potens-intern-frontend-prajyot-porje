@@ -3,7 +3,7 @@
 import React, { useEffect, useState, Suspense } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { RefreshCw } from "lucide-react";
-import { useLanguage } from "@/hooks/useLanguage";
+import { useLanguage } from "@/lib/i18n";
 import { DisplayText, Heading, ParagraphText } from "@/components/typography";
 import { Button, Card, Section, Divider, IconWrapper } from "@/components/primitives";
 import { CATEGORIES } from "@/lib/utils/constants";
@@ -17,20 +17,23 @@ function ConfirmationContent() {
   const { t, locale } = useLanguage();
 
   const submissionId = searchParams.get("id") || "";
-  const [submission, setSubmission] = useState<Submission | null>(null);
+  const [submission, setSubmission] = useState<Submission | null>(() => {
+    if (typeof window !== "undefined") {
+      return getSubmissionById(submissionId);
+    }
+    return null;
+  });
   const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
     window.scrollTo(0, 0);
-    Promise.resolve().then(() => {
-      setMounted(true);
-      const record = getSubmissionById(submissionId);
-      if (!record) {
-        router.replace("/category");
-        return;
-      }
+    setMounted(true);
+    const record = getSubmissionById(submissionId);
+    if (!record) {
+      router.replace("/category");
+    } else {
       setSubmission(record);
-    });
+    }
   }, [submissionId, router]);
 
   useEffect(() => {
@@ -251,15 +254,20 @@ function ConfirmationContent() {
   );
 }
 
+function ConfirmationFallback() {
+  const { t } = useLanguage();
+  return (
+    <div className="flex flex-col flex-1 items-center justify-center py-space-12">
+      <ParagraphText variant="regular" className="animate-pulse">
+        {t("confirmation.loading")}
+      </ParagraphText>
+    </div>
+  );
+}
+
 export default function ConfirmationPage() {
   return (
-    <Suspense fallback={
-      <div className="flex flex-col flex-1 items-center justify-center py-space-12">
-        <ParagraphText variant="regular" className="animate-pulse">
-          Generating confirmation details...
-        </ParagraphText>
-      </div>
-    }>
+    <Suspense fallback={<ConfirmationFallback />}>
       <ConfirmationContent />
     </Suspense>
   );

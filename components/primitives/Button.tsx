@@ -22,35 +22,19 @@ export const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
 
     const variantStyles = {
       primary: cn(
-        // High-contrast text-on-surface, no color accents
-        // Light: Black bg, Off-White text. Dark: Off-White bg, Black text.
-        "bg-[#1A1A1F] text-[#FAFAFA] border border-[#1A1A1F]",
-        "dark:bg-[#F2F2F4] dark:text-[#0A0A0C] dark:border-[#F2F2F4]",
-        // Shallow hover gradients
-        "hover:bg-[#24242B] dark:hover:bg-[#E2E2E6]"
+        "bg-text-primary text-bg border border-text-primary hover:bg-primary-hover"
       ),
       secondary: cn(
-        // Transparent surface, border-only
-        "bg-transparent text-text-primary border border-border-strong",
-        "hover:bg-surface-variant"
+        "bg-transparent text-text-primary border border-border-strong hover:bg-surface-variant"
       ),
       success: cn(
-        // Clean semantic green
-        "bg-[#3F7A5C] text-white border border-[#3F7A5C]",
-        "dark:bg-[#6BAE8A] dark:text-[#0A0A0C] dark:border-[#6BAE8A]",
-        "hover:opacity-90"
+        "bg-success text-white border border-success dark:text-bg hover:opacity-90"
       ),
       warning: cn(
-        // Clean semantic amber/gold
-        "bg-[#B8862E] text-white border border-[#B8862E]",
-        "dark:bg-[#D9A94F] dark:text-[#0A0A0C] dark:border-[#D9A94F]",
-        "hover:opacity-90"
+        "bg-warning text-white border border-warning dark:text-bg hover:opacity-90"
       ),
       error: cn(
-        // Clean semantic red
-        "bg-[#C4453A] text-white border border-[#C4453A]",
-        "dark:bg-[#E8776D] dark:text-[#0A0A0C] dark:border-[#E8776D]",
-        "hover:opacity-90"
+        "bg-error text-white border border-error dark:text-bg hover:opacity-90"
       ),
     };
 

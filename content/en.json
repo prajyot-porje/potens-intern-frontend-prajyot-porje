@@ -42,7 +42,6 @@
     "voiceTapToSpeak": "Tap mic to dictate description",
     "voiceNotSupported": "Voice input is not supported in this browser.",
     "voiceError": "Voice error occurred. Please type manually.",
-    "voiceMockText": "There is a large pothole near the main intersection causing traffic delays.",
     "voiceStop": "Stop & Keep",
     "voiceCancel": "Cancel",
     "voiceErrorTitle": "Voice Input Error",
@@ -63,6 +62,7 @@
   },
   "confirmation": {
     "successTitle": "Report Submitted",
+    "loading": "Generating confirmation details...",
     "referenceIdLabel": "Reference ID",
     "copyRef": "Copy ID",
     "refCopied": "Reference ID copied!",
@@ -78,6 +78,7 @@
     "offlineNotice": "You are currently offline. The report is queued locally."
   },
   "timeline": {
+    "liveTracking": "Live Tracking",
     "submitted": "Submitted",
     "submittedDesc": "Your report has been successfully registered.",
     "underReview": "Under Review",
@@ -95,6 +96,7 @@
     "offlineShort": "Offline",
     "offlineBanner": "You are offline. New reports will be saved locally and automatically synchronized when your connection is restored.",
     "reconnectBanner": "Connection restored. Queued reports have been synchronized.",
+    "reconnectedTitle": "Connection Restored",
     "syncingBanner": "Synchronizing queued reports..."
   }
 }

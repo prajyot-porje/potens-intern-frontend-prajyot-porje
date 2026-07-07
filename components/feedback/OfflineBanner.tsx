@@ -3,7 +3,7 @@
 import React, { useEffect, useState, useRef } from "react";
 import { Wifi, WifiOff, RefreshCw } from "lucide-react";
 import { useNetworkStatus } from "../../hooks/useNetworkStatus";
-import { useLanguage } from "../../hooks/useLanguage";
+import { useLanguage } from "../../lib/i18n";
 import { IconWrapper } from "../primitives";
 import { getSubmissions, syncQueuedSubmissions } from "../../lib/storage";
 
@@ -98,7 +98,7 @@ export function OfflineBanner() {
         <span className="text-xs font-semibold text-text-primary leading-tight">
           {bannerState === "offline" && t("pwa.offlineShort")}
           {bannerState === "syncing" && t("common.loading")}
-          {bannerState === "reconnected" && t("confirmation.successTitle")}
+          {bannerState === "reconnected" && t("pwa.reconnectedTitle")}
         </span>
         <span className="text-[11px] text-text-secondary leading-snug mt-0.5 max-w-[360px]">
           {bannerState === "offline" && t("pwa.offlineBanner")}

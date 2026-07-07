@@ -4,6 +4,8 @@ import React, { createContext, useContext, useState, useEffect } from "react";
 import en from "../../content/en.json";
 import mr from "../../content/mr.json";
 
+import { STORAGE_KEYS } from "../utils/constants";
+
 export type Locale = "en" | "mr";
 
 type TranslationKeys = typeof en;
@@ -16,8 +18,6 @@ interface LanguageContextType {
 
 const LanguageContext = createContext<LanguageContextType | undefined>(undefined);
 
-const STORAGE_KEY = "nagrik_locale";
-
 const dictionaries: Record<Locale, TranslationKeys> = { en, mr };
 
 export const LanguageProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
@@ -27,14 +27,16 @@ export const LanguageProvider: React.FC<{ children: React.ReactNode }> = ({ chil
   // Initialize from storage or environment on mount
   useEffect(() => {
     Promise.resolve().then(() => {
-      const saved = localStorage.getItem(STORAGE_KEY) as Locale | null;
+      const saved = localStorage.getItem(STORAGE_KEYS.LOCALE) as Locale | null;
       if (saved === "en" || saved === "mr") {
         setLocaleState(saved);
+        document.documentElement.lang = saved;
       } else {
         // Detect browser language
         const systemLang = navigator.language.toLowerCase();
         const detected: Locale = systemLang.startsWith("mr") ? "mr" : "en";
         setLocaleState(detected);
+        document.documentElement.lang = detected;
       }
       setMounted(true);
     });
@@ -42,7 +44,7 @@ export const LanguageProvider: React.FC<{ children: React.ReactNode }> = ({ chil
 
   const setLanguage = (lang: Locale) => {
     setLocaleState(lang);
-    localStorage.setItem(STORAGE_KEY, lang);
+    localStorage.setItem(STORAGE_KEYS.LOCALE, lang);
     // Update HTML lang attribute for accessibility
     document.documentElement.lang = lang;
   };

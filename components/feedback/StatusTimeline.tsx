@@ -3,7 +3,7 @@
 import React from "react";
 import { motion } from "framer-motion";
 import { Check } from "lucide-react";
-import { useLanguage } from "../../hooks/useLanguage";
+import { useLanguage } from "../../lib/i18n";
 import { ParagraphText } from "../typography";
 import { useReducedMotion } from "../../hooks/useReducedMotion";
 import { cn } from "../../lib/utils";
@@ -54,7 +54,7 @@ export function StatusTimeline() {
           {t("confirmation.statusLabel")}
         </span>
         <ParagraphText variant="uiLabel" className="!text-text-primary text-base font-semibold">
-          Live Tracking
+          {t("timeline.liveTracking")}
         </ParagraphText>
       </div>
 
@@ -143,19 +143,19 @@ export function StatusTimeline() {
                 "pb-6 flex flex-col justify-start transition-colors duration-300",
                 isActive ? "text-text-primary" : isCompleted ? "text-text-primary/80" : "text-text-tertiary"
               )}>
-                <h3 className={cn(
+                <h2 className={cn(
                   "text-sm font-semibold leading-tight mb-1",
                   isActive && "text-text-primary",
                   isCompleted && "text-text-primary/95",
-                  isPending && "text-text-secondary/70"
+                  isPending && "text-text-secondary"
                 )}>
                   {t(step.labelKey)}
-                </h3>
+                </h2>
                 <ParagraphText
                   variant="caption"
                   className={cn(
                     "leading-relaxed transition-colors duration-300 max-w-[36ch]",
-                    isActive ? "!text-text-secondary" : isCompleted ? "!text-text-tertiary" : "!text-text-tertiary/60"
+                    isActive ? "!text-text-secondary" : isCompleted ? "!text-text-tertiary" : "!text-text-tertiary"
                   )}
                 >
                   {t(step.descKey)}

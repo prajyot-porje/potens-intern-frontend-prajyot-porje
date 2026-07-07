@@ -1,7 +1,7 @@
 "use client";
 
 import React from "react";
-import { useLanguage } from "../../hooks/useLanguage";
+import { useLanguage } from "../../lib/i18n";
 import { cn } from "../../lib/utils";
 
 interface HeadingProps extends React.HTMLAttributes<HTMLHeadingElement> {
