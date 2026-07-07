@@ -2,41 +2,57 @@
 
 import React, { useEffect, useState, Suspense } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
-import { CheckCircle2, RefreshCw } from "lucide-react";
+import { RefreshCw } from "lucide-react";
 import { useLanguage } from "@/hooks/useLanguage";
 import { DisplayText, Heading, ParagraphText, MonoText } from "@/components/typography";
 import { Button, Card, Section, Divider, IconWrapper } from "@/components/primitives";
 import { CATEGORIES } from "@/lib/utils/constants";
-import { generateReferenceId } from "@/lib/utils/reference-id";
-import { ReducedMotionWrapper } from "@/components/motion";
+import { getSubmissionById, Submission } from "@/lib/storage";
+import { ReducedMotionWrapper, CheckmarkDraw, StaggeredRefId } from "@/components/motion";
 
 function ConfirmationContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const { t, locale } = useLanguage();
 
-  const categoryKey = searchParams.get("category") || "other";
-  const categoryConfig = CATEGORIES[categoryKey] || CATEGORIES.other;
-  const description = searchParams.get("description") || "";
-
+  const submissionId = searchParams.get("id") || "";
+  const [submission, setSubmission] = useState<Submission | null>(null);
   const [mounted, setMounted] = useState(false);
-  const [referenceId, setReferenceId] = useState("");
-  const [timestamp, setTimestamp] = useState("");
 
   useEffect(() => {
     setMounted(true);
-    setReferenceId(generateReferenceId(categoryKey));
-    setTimestamp(
-      new Date().toLocaleString(locale === "mr" ? "mr-IN" : "en-US", {
-        dateStyle: "medium",
-        timeStyle: "short",
-      })
-    );
-  }, [categoryKey, locale]);
+    const record = getSubmissionById(submissionId);
+    if (!record) {
+      router.replace("/category");
+      return;
+    }
+    setSubmission(record);
+  }, [submissionId, router]);
 
   const handleReset = () => {
+    // Navigate back to a clean category selection screen
     router.push("/category");
   };
+
+  // Render a loading state during hydration or database check to prevent flash of empty values
+  if (!mounted || !submission) {
+    return (
+      <div className="flex flex-col flex-1 items-center justify-center py-space-12">
+        <ParagraphText variant="regular" className="animate-pulse">
+          {t("common.loading")}
+        </ParagraphText>
+      </div>
+    );
+  }
+
+  const categoryConfig = CATEGORIES[submission.category] || CATEGORIES.other;
+  const timestamp = new Date(submission.createdAt).toLocaleString(
+    locale === "mr" ? "mr-IN" : "en-US",
+    {
+      dateStyle: "medium",
+      timeStyle: "short",
+    }
+  );
 
   return (
     <ReducedMotionWrapper variantType="slideHorizontal" direction="forward" className="flex flex-col flex-1 gap-space-6">
@@ -44,13 +60,13 @@ function ConfirmationContent() {
       {/* Success Visual Area */}
       <Section spacing="space-4" className="flex flex-col items-center text-center pb-0">
         <div className="text-success mb-space-4">
-          <IconWrapper icon={CheckCircle2} size="large" className="w-16 h-16 animate-none" />
+          <CheckmarkDraw />
         </div>
         <DisplayText size="medium" className="mb-space-2 !text-3xl tracking-tight font-bold">
           {t("confirmation.successTitle")}
         </DisplayText>
         <ParagraphText variant="regular" className="text-text-secondary max-w-[30ch]">
-          {mounted ? timestamp : "..."}
+          {timestamp}
         </ParagraphText>
       </Section>
 
@@ -62,9 +78,9 @@ function ConfirmationContent() {
             <ParagraphText variant="caption" className="uppercase tracking-wider !text-text-tertiary">
               {t("confirmation.referenceIdLabel")}
             </ParagraphText>
-            <MonoText className="text-xl font-bold !text-text-primary tracking-wider select-all">
-              {mounted ? referenceId : "..."}
-            </MonoText>
+            <div className="text-xl font-bold !text-text-primary tracking-wider select-all h-7 flex items-center">
+              <StaggeredRefId id={submission.id} />
+            </div>
           </div>
 
           <Divider />
@@ -90,7 +106,7 @@ function ConfirmationContent() {
             </div>
           </div>
 
-          {description && (
+          {submission.description && (
             <>
               <Divider />
               <div className="flex flex-col gap-space-1">
@@ -98,8 +114,27 @@ function ConfirmationContent() {
                   {t("confirmation.descriptionLabel")}
                 </ParagraphText>
                 <ParagraphText variant="regular" className="!text-text-primary italic leading-relaxed whitespace-pre-wrap max-w-full line-clamp-4">
-                  &ldquo;{description}&rdquo;
+                  &ldquo;{submission.description}&rdquo;
                 </ParagraphText>
+              </div>
+            </>
+          )}
+
+          {submission.photo && (
+            <>
+              <Divider />
+              <div className="flex flex-col gap-space-2">
+                <ParagraphText variant="caption" className="uppercase tracking-wider !text-text-tertiary">
+                  {t("confirmation.photoLabel")}
+                </ParagraphText>
+                <div className="border border-border rounded-md overflow-hidden bg-surface-variant max-w-[200px] aspect-square relative shadow-sm">
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img
+                    src={submission.photo}
+                    alt="Submitted complaint attachment"
+                    className="w-full h-full object-cover"
+                  />
+                </div>
               </div>
             </>
           )}

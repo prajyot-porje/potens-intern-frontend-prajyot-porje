@@ -18,9 +18,19 @@ export function getSubmissions(): Submission[] {
   if (typeof window === "undefined") return [];
   try {
     const data = window.localStorage.getItem(STORAGE_KEYS.SUBMISSIONS);
-    return data ? JSON.parse(data) : [];
+    if (!data) return [];
+    const parsed = JSON.parse(data);
+    if (Array.isArray(parsed)) {
+      return parsed;
+    }
+    console.warn("Submissions in localStorage is not an array, clearing corrupted data.");
+    window.localStorage.removeItem(STORAGE_KEYS.SUBMISSIONS);
+    return [];
   } catch (error) {
-    console.error("Error reading submissions from localStorage:", error);
+    console.error("Error reading submissions from localStorage, clearing corrupted data:", error);
+    try {
+      window.localStorage.removeItem(STORAGE_KEYS.SUBMISSIONS);
+    } catch (e) {}
     return [];
   }
 }
