@@ -114,26 +114,24 @@ export function useSpeech(options: UseSpeechOptions = {}) {
         let interimTranscript = "";
         let finalTranscript = "";
 
-        // Only process NEW results since the last event (event.resultIndex to end).
-        // This prevents re-reading already-processed results that Chrome sometimes
-        // re-includes in the results list on mobile.
-        for (let i = event.resultIndex; i < event.results.length; ++i) {
+        // Rebuild the entire transcript from scratch.
+        // This is the only bulletproof way to handle mobile Chrome/Android where
+        // event.resultIndex is buggy and often resets to 0, which causes
+        // duplicate appends in cumulative transcription models.
+        for (let i = 0; i < event.results.length; ++i) {
           const result = event.results[i];
           if (result.isFinal) {
-            finalTranscript += result[0].transcript;
+            finalTranscript += (finalTranscript ? " " : "") + result[0].transcript.trim();
           } else {
             interimTranscript += result[0].transcript;
           }
         }
 
-        if (finalTranscript) {
-          accumulatedFinalRef.current +=
-            (accumulatedFinalRef.current ? " " : "") + finalTranscript.trim();
-        }
+        accumulatedFinalRef.current = finalTranscript;
 
         if (onResult) {
           onResult({
-            final: accumulatedFinalRef.current,
+            final: finalTranscript,
             interim: interimTranscript,
           });
         }

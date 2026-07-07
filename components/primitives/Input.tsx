@@ -12,9 +12,9 @@ export const Input = React.forwardRef<HTMLInputElement, InputProps>(
         ref={ref}
         type={type}
         className={cn(
-          "w-full rounded-md border border-border bg-surface text-text-primary px-space-4 py-space-3 text-formInput transition-colors duration-150 placeholder:text-text-tertiary",
+          "w-full rounded-md border border-border bg-surface text-text-primary px-space-4 py-space-3 text-formInput transition-all duration-150 placeholder:text-text-tertiary",
           "min-h-[48px]", // Min touch target: 48px
-          "focus:border-border-strong focus:outline-none focus:ring-0 focus-visible:border-border-strong",
+          "focus:border-border-strong focus:outline-none focus:shadow-[0_0_0_2px_var(--bg),0_0_0_4px_var(--border-strong)]",
           "custom-focus",
           className
         )}

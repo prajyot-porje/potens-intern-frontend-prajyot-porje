@@ -14,7 +14,7 @@ import { ReducedMotionWrapper } from "@/components/motion";
 import { cn } from "@/lib/utils";
 import { useSpeech } from "@/hooks/useSpeech";
 import { useReducedMotion } from "@/hooks/useReducedMotion";
-import { motion } from "framer-motion";
+import { motion, AnimatePresence } from "framer-motion";
 
 const iconMap: Record<string, React.ComponentType<any>> = {
   Road,
@@ -87,6 +87,54 @@ const formatDuration = (seconds: number) => {
   const secs = seconds % 60;
   return `${mins}:${secs.toString().padStart(2, "0")}`;
 };
+
+function DetailsSkeleton() {
+  return (
+    <div className="flex flex-col flex-1 gap-space-6 animate-pulse">
+      {/* Category Preview Skeleton */}
+      <div className="bg-surface-variant/40 border border-border p-space-2 rounded-lg">
+        <div className="bg-surface border border-border rounded-md p-space-3 flex items-center justify-between h-16">
+          <div className="flex items-center gap-space-3">
+            <div className="w-12 h-12 rounded-md bg-surface-variant" />
+            <div className="flex flex-col gap-space-1">
+              <div className="h-3 w-16 bg-surface-variant rounded" />
+              <div className="h-4 w-24 bg-surface-variant rounded" />
+            </div>
+          </div>
+          <div className="h-9 w-16 bg-surface-variant rounded" />
+        </div>
+      </div>
+
+      {/* Form Area Skeleton */}
+      <div className="flex-1 flex flex-col justify-between gap-space-6">
+        <div className="flex-1 flex flex-col gap-space-6">
+          {/* Textarea Skeleton */}
+          <div className="flex flex-col gap-space-2">
+            <div className="h-4 w-24 bg-surface-variant rounded" />
+            <div className="h-3 w-48 bg-surface-variant rounded" />
+            <div className="w-full h-40 bg-surface-variant rounded-md" />
+          </div>
+
+          {/* Grid Cards Skeleton */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-space-4">
+            <div className="bg-surface-variant/40 border border-border p-space-2 rounded-lg h-44">
+              <div className="bg-surface border border-border-strong border-dashed rounded-md h-full" />
+            </div>
+            <div className="bg-surface-variant/40 border border-border p-space-2 rounded-lg h-44">
+              <div className="bg-surface border border-border rounded-md h-full" />
+            </div>
+          </div>
+        </div>
+
+        {/* Buttons Skeleton */}
+        <div className="pt-space-6 pb-space-2 mt-auto border-t border-border/50 flex gap-space-3">
+          <div className="w-1/3 h-12 bg-surface-variant rounded" />
+          <div className="w-2/3 h-12 bg-surface-variant rounded" />
+        </div>
+      </div>
+    </div>
+  );
+}
 
 function DetailsContent() {
   const router = useRouter();
@@ -465,15 +513,21 @@ function DetailsContent() {
               )}
             />
             
-            {descriptionError && (
-              <span
-                id="description-error"
-                role="alert"
-                className="text-xs text-error font-medium transition-all"
-              >
-                {descriptionError}
-              </span>
-            )}
+            <AnimatePresence mode="wait">
+              {descriptionError && (
+                <motion.span
+                  id="description-error"
+                  role="alert"
+                  initial={{ opacity: 0, y: -4 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: -4 }}
+                  transition={{ duration: 0.15, ease: "easeOut" }}
+                  className="text-xs text-error font-medium block"
+                >
+                  {descriptionError}
+                </motion.span>
+              )}
+            </AnimatePresence>
             
             <div className="flex justify-between items-center text-xs" id="description-helper">
               <span className={cn(
@@ -494,245 +548,287 @@ function DetailsContent() {
             {/* 3. Photo Upload Card Component (Double-Bezel) */}
             <div 
               className={cn(
-                "bg-surface-variant/40 border border-border p-space-2 rounded-lg transition-colors duration-150 flex flex-col justify-between",
+                "bg-surface-variant/40 border border-border p-space-2 rounded-lg transition-[background-color,border-color] duration-150 flex flex-col justify-between min-h-[194px]",
                 isDragging && "border-text-primary bg-surface-variant/70",
                 imageError && "border-error bg-error/5"
               )}
             >
-              {photo ? (
-                /* Selected / Preview State */
-                <div className="bg-surface border border-border rounded-md overflow-hidden relative min-h-[176px] h-full flex-1 group flex flex-col">
-                  {/* eslint-disable-next-line @next/next/no-img-element */}
-                  <img
-                    src={photo}
-                    alt="Complaint attachment preview"
-                    className="w-full h-full min-h-[176px] flex-1 object-cover transition-transform duration-300 group-hover:scale-102"
-                  />
-                  
-                  {/* Overlay delete control */}
-                  <div className="absolute inset-0 bg-black/45 opacity-0 group-hover:opacity-100 focus-within:opacity-100 transition-opacity duration-150 flex items-center justify-center">
-                    <Button
-                      type="button"
-                      variant="error"
-                      onClick={removePhoto}
-                      className="!min-h-[40px] !h-[40px] !px-space-4 text-xs font-semibold rounded-md flex items-center gap-space-2 border border-error bg-error text-white hover:bg-error/90 active:scale-95 transition-transform"
-                      aria-label={t("form.removePhoto")}
-                    >
-                      <IconWrapper icon={Trash2} size="micro" />
-                      <span>{t("form.removePhoto")}</span>
-                    </Button>
-                  </div>
-                </div>
-              ) : (
-                /* Empty / Dropzone State */
-                <div
-                  role="button"
-                  tabIndex={0}
-                  onClick={() => fileInputRef.current?.click()}
-                  onKeyDown={(e) => {
-                    if (e.key === "Enter" || e.key === " ") {
-                      e.preventDefault();
-                      fileInputRef.current?.click();
-                    }
-                  }}
-                  onDragOver={handleDragOver}
-                  onDragLeave={handleDragLeave}
-                  onDrop={handleDrop}
-                  aria-label={t("form.photoLabel")}
-                  className={cn(
-                    "bg-surface border border-dashed border-border-strong rounded-md p-space-4 flex flex-col items-center justify-center text-center cursor-pointer transition-all duration-150 select-none min-h-[176px] relative group outline-none",
-                    "hover:bg-surface-variant focus-visible:bg-surface-variant focus-visible:border-text-primary",
-                    "focus-visible:shadow-[0_0_0_2px_var(--bg),0_0_0_4px_var(--text-primary)]",
-                    "active:scale-[0.98]",
-                    imageError && "border-error focus-visible:border-error focus-visible:shadow-[0_0_0_2px_var(--bg),0_0_0_4px_var(--error)]"
-                  )}
-                >
-                  <input
-                    type="file"
-                    ref={fileInputRef}
-                    onChange={handleFileChange}
-                    accept="image/*"
-                    className="hidden"
-                  />
-                  
-                  <div className="flex items-center justify-center w-12 h-12 rounded-full bg-surface-variant border border-border text-text-secondary group-hover:text-text-primary transition-colors duration-150 mb-space-2">
-                    <IconWrapper icon={Camera} size="standard" />
-                  </div>
-                  
-                  <Heading level={3} className="!text-sm font-semibold mb-space-1 text-text-primary">
-                    {t("form.photoLabel")}
-                  </Heading>
-                  
-                  <ParagraphText variant="caption" className="max-w-[24ch] !text-text-secondary">
-                    {t("form.dragDropHint")}
-                  </ParagraphText>
-                </div>
-              )}
-              {imageError && (
-                <span
-                  id="image-error"
-                  role="alert"
-                  className="text-xs text-error font-medium mt-space-2 text-center"
-                >
-                  {imageError}
-                </span>
-              )}
+              <AnimatePresence mode="wait">
+                {photo ? (
+                  /* Selected / Preview State */
+                  <motion.div
+                    key="preview"
+                    initial={{ opacity: 0, transform: "scale(0.98)" }}
+                    animate={{ opacity: 1, transform: "scale(1)" }}
+                    exit={{ opacity: 0, transform: "scale(0.98)" }}
+                    transition={{ duration: 0.15, ease: "easeOut" }}
+                    className="bg-surface border border-border rounded-md overflow-hidden relative min-h-[176px] h-full flex-1 group flex flex-col"
+                  >
+                    {/* eslint-disable-next-line @next/next/no-img-element */}
+                    <img
+                      src={photo}
+                      alt="Complaint attachment preview"
+                      className="w-full h-full min-h-[176px] flex-1 object-cover transition-transform duration-300 group-hover:scale-102"
+                    />
+                    
+                    {/* Overlay delete control */}
+                    <div className="absolute inset-0 bg-black/45 opacity-0 group-hover:opacity-100 focus-within:opacity-100 transition-opacity duration-150 flex items-center justify-center">
+                      <Button
+                        type="button"
+                        variant="error"
+                        onClick={removePhoto}
+                        className="!min-h-[40px] !h-[40px] !px-space-4 text-xs font-semibold rounded-md flex items-center gap-space-2 border border-error bg-error text-white hover:bg-error/90 active:scale-95 transition-transform btn-hover-group"
+                        aria-label={t("form.removePhoto")}
+                      >
+                        <IconWrapper icon={Trash2} size="micro" className="transition-transform duration-150 btn-hover-scale" />
+                        <span>{t("form.removePhoto")}</span>
+                      </Button>
+                    </div>
+                  </motion.div>
+                ) : (
+                  /* Empty / Dropzone State */
+                  <motion.div
+                    key="dropzone"
+                    initial={{ opacity: 0, transform: "scale(0.98)" }}
+                    animate={{ opacity: 1, transform: "scale(1)" }}
+                    exit={{ opacity: 0, transform: "scale(0.98)" }}
+                    transition={{ duration: 0.15, ease: "easeOut" }}
+                    role="button"
+                    tabIndex={0}
+                    onClick={() => fileInputRef.current?.click()}
+                    onKeyDown={(e) => {
+                      if (e.key === "Enter" || e.key === " ") {
+                        e.preventDefault();
+                        fileInputRef.current?.click();
+                      }
+                    }}
+                    onDragOver={handleDragOver}
+                    onDragLeave={handleDragLeave}
+                    onDrop={handleDrop}
+                    aria-label={t("form.photoLabel")}
+                    className={cn(
+                      "bg-surface border border-dashed border-border-strong rounded-md p-space-4 flex flex-col items-center justify-center text-center cursor-pointer transition-all duration-150 select-none min-h-[176px] relative group outline-none flex-1",
+                      "interactive-card focus-visible:border-text-primary",
+                      "focus-visible:shadow-[0_0_0_2px_var(--bg),0_0_0_4px_var(--text-primary)]",
+                      "motion-safe:active:scale-[0.98]",
+                      imageError && "border-error focus-visible:border-error focus-visible:shadow-[0_0_0_2px_var(--bg),0_0_0_4px_var(--error)]"
+                    )}
+                  >
+                    <input
+                      type="file"
+                      ref={fileInputRef}
+                      onChange={handleFileChange}
+                      accept="image/*"
+                      className="hidden"
+                    />
+                    
+                    <div className="flex items-center justify-center w-12 h-12 rounded-full bg-surface-variant border border-border text-text-secondary group-hover:text-text-primary transition-colors duration-150 mb-space-2">
+                      <IconWrapper icon={Camera} size="standard" />
+                    </div>
+                    
+                    <Heading level={3} className="!text-sm font-semibold mb-space-1 text-text-primary">
+                      {t("form.photoLabel")}
+                    </Heading>
+                    
+                    <ParagraphText variant="caption" className="max-w-[24ch] !text-text-secondary">
+                      {t("form.dragDropHint")}
+                    </ParagraphText>
+                  </motion.div>
+                )}
+              </AnimatePresence>
+              <AnimatePresence mode="wait">
+                {imageError && (
+                  <motion.span
+                    id="image-error"
+                    role="alert"
+                    initial={{ opacity: 0, y: -4 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0, y: -4 }}
+                    transition={{ duration: 0.15, ease: "easeOut" }}
+                    className="text-xs text-error font-medium mt-space-2 text-center block"
+                  >
+                    {imageError}
+                  </motion.span>
+                )}
+              </AnimatePresence>
             </div>
 
             {/* 4. Voice Input Card Component (Double-Bezel) */}
-            <div className="bg-surface-variant/40 border border-border p-space-2 rounded-lg">
-              {!isSpeechSupported ? (
-                /* State A: Unsupported Browser */
-                <div
-                  className="bg-surface/50 border border-border/80 rounded-md p-space-4 flex flex-col items-center justify-center text-center select-none min-h-[176px] relative opacity-60"
-                  aria-describedby="voice-unsupported-hint"
-                >
-                  <div className="flex items-center justify-center w-12 h-12 rounded-full bg-surface-variant border border-border text-text-tertiary mb-space-2">
-                    <IconWrapper icon={Mic} size="standard" />
-                  </div>
-                  <Heading level={3} className="!text-sm font-semibold mb-space-1 text-text-secondary">
-                    {t("form.voiceLabel")}
-                  </Heading>
-                  <ParagraphText id="voice-unsupported-hint" variant="caption" className="max-w-[24ch] !text-text-tertiary">
-                    {t("form.voiceNotSupported")}
-                  </ParagraphText>
-                </div>
-              ) : speechError ? (
-                /* State B: Error Occurred */
-                <div
-                  role="button"
-                  tabIndex={0}
-                  onClick={handleResetSpeechError}
-                  onKeyDown={(e) => {
-                    if (e.key === "Enter" || e.key === " ") {
-                      e.preventDefault();
-                      handleResetSpeechError(e as any);
-                    }
-                  }}
-                  aria-label={`${t("form.voiceErrorTitle")}. ${t(`form.voiceError${speechError.charAt(0).toUpperCase() + speechError.slice(1)}` || "form.voiceError")}. ${t("form.voiceTryAgain")}`}
-                  className={cn(
-                    "bg-surface border border-error/50 rounded-md p-space-4 flex flex-col items-center justify-center text-center cursor-pointer transition-all duration-150 select-none min-h-[176px] relative group outline-none",
-                    "hover:bg-surface-variant focus-visible:bg-surface-variant focus-visible:border-error focus-visible:shadow-[0_0_0_2px_var(--bg),0_0_0_4px_var(--error)]",
-                    "active:scale-[0.98]"
-                  )}
-                >
-                  <div className="flex items-center justify-center w-12 h-12 rounded-full bg-error/10 border border-error/20 text-error mb-space-2">
-                    <IconWrapper icon={ShieldAlert} size="standard" />
-                  </div>
-                  <Heading level={3} className="!text-sm font-semibold mb-space-1 text-error">
-                    {t("form.voiceErrorTitle")}
-                  </Heading>
-                  <ParagraphText variant="caption" className="max-w-[28ch] !text-text-secondary mb-space-2">
-                    {t(`form.voiceError${speechError === "permission-denied" ? "PermissionDenied" : speechError === "no-speech" ? "NoSpeech" : speechError === "network" ? "Network" : speechError === "aborted" ? "Aborted" : "Generic"}`)}
-                  </ParagraphText>
-                  <span className="text-[11px] font-mono uppercase tracking-[0.15em] text-text-tertiary group-hover:text-text-primary transition-colors">
-                    {t("form.voiceTryAgain")}
-                  </span>
-                </div>
-              ) : isListening ? (
-                /* State C: Listening Active */
-                <div
-                  role="region"
-                  aria-label="Voice recording session active"
-                  className="bg-surface border border-border rounded-md p-space-4 flex flex-col items-center justify-center text-center min-h-[176px] relative outline-none"
-                >
-                  {/* Recording Timer Centered in Flow */}
-                  <div className="font-mono text-xs font-semibold text-text-secondary bg-surface-variant/80 border border-border px-space-2 py-0.5 rounded-full flex items-center gap-1.5 mb-space-2" aria-label="Recording duration">
-                    <span className="w-1.5 h-1.5 rounded-full bg-error animate-pulse"></span>
-                    {formatDuration(speechDuration)}
-                  </div>
-
-                  {/* Pulsing visual halo (respects prefers-reduced-motion) */}
-                  <div className="relative mb-space-2">
-                    <motion.div
-                      animate={isReducedMotion ? {} : {
-                        scale: [1, 1.08, 1],
-                        opacity: [1, 0.6, 1],
-                      }}
-                      transition={{
-                        duration: 1.5,
-                        repeat: Infinity,
-                        ease: "easeInOut",
-                      }}
-                      className="absolute -inset-2 rounded-full bg-text-primary/10"
-                    />
-                    <div className="relative flex items-center justify-center w-10 h-10 rounded-full bg-text-primary text-surface border border-text-primary">
+            <div className="bg-surface-variant/40 border border-border p-space-2 rounded-lg min-h-[194px] flex flex-col justify-between">
+              <AnimatePresence mode="wait">
+                {!isSpeechSupported ? (
+                  /* State A: Unsupported Browser */
+                  <motion.div
+                    key="unsupported"
+                    initial={{ opacity: 0, transform: "scale(0.98)" }}
+                    animate={{ opacity: 1, transform: "scale(1)" }}
+                    exit={{ opacity: 0, transform: "scale(0.98)" }}
+                    transition={{ duration: 0.15, ease: "easeOut" }}
+                    className="bg-surface/50 border border-border/80 rounded-md p-space-4 flex flex-col items-center justify-center text-center select-none min-h-[176px] relative opacity-60 flex-1"
+                    aria-describedby="voice-unsupported-hint"
+                  >
+                    <div className="flex items-center justify-center w-12 h-12 rounded-full bg-surface-variant border border-border text-text-tertiary mb-space-2">
                       <IconWrapper icon={Mic} size="standard" />
                     </div>
-                  </div>
-
-                  <Heading level={3} className="!text-sm font-semibold mb-space-1 text-text-primary" aria-live="polite">
-                    {t("form.voiceListening")}
-                  </Heading>
-
-                  {/* Visual Waveform (pure decoration, respects reduced motion) */}
-                  {!isReducedMotion && (
-                    <div className="flex items-center gap-1 h-3 mt-space-1 mb-space-3">
-                      <motion.span animate={{ height: [4, 8, 4] }} transition={{ repeat: Infinity, duration: 0.6, delay: 0.1 }} className="w-0.5 bg-text-primary/40 rounded-full"></motion.span>
-                      <motion.span animate={{ height: [6, 14, 6] }} transition={{ repeat: Infinity, duration: 0.5, delay: 0.2 }} className="w-0.5 bg-text-primary/60 rounded-full"></motion.span>
-                      <motion.span animate={{ height: [4, 10, 4] }} transition={{ repeat: Infinity, duration: 0.7, delay: 0 }} className="w-0.5 bg-text-primary rounded-full"></motion.span>
-                      <motion.span animate={{ height: [8, 12, 8] }} transition={{ repeat: Infinity, duration: 0.4, delay: 0.3 }} className="w-0.5 bg-text-primary/75 rounded-full"></motion.span>
-                      <motion.span animate={{ height: [4, 6, 4] }} transition={{ repeat: Infinity, duration: 0.8, delay: 0.15 }} className="w-0.5 bg-text-primary/50 rounded-full"></motion.span>
+                    <Heading level={3} className="!text-sm font-semibold mb-space-1 text-text-secondary">
+                      {t("form.voiceLabel")}
+                    </Heading>
+                    <ParagraphText id="voice-unsupported-hint" variant="caption" className="max-w-[24ch] !text-text-tertiary">
+                      {t("form.voiceNotSupported")}
+                    </ParagraphText>
+                  </motion.div>
+                ) : speechError ? (
+                  /* State B: Error Occurred */
+                  <motion.div
+                    key="error"
+                    initial={{ opacity: 0, transform: "scale(0.98)" }}
+                    animate={{ opacity: 1, transform: "scale(1)" }}
+                    exit={{ opacity: 0, transform: "scale(0.98)" }}
+                    transition={{ duration: 0.15, ease: "easeOut" }}
+                    role="button"
+                    tabIndex={0}
+                    onClick={handleResetSpeechError}
+                    onKeyDown={(e) => {
+                      if (e.key === "Enter" || e.key === " ") {
+                        e.preventDefault();
+                        handleResetSpeechError(e as any);
+                      }
+                    }}
+                    aria-label={`${t("form.voiceErrorTitle")}. ${t(`form.voiceError${speechError.charAt(0).toUpperCase() + speechError.slice(1)}` || "form.voiceError")}. ${t("form.voiceTryAgain")}`}
+                    className={cn(
+                      "bg-surface border border-error/50 rounded-md p-space-4 flex flex-col items-center justify-center text-center cursor-pointer transition-all duration-150 select-none min-h-[176px] relative group outline-none flex-1",
+                      "interactive-card focus-visible:border-error focus-visible:shadow-[0_0_0_2px_var(--bg),0_0_0_4px_var(--error)]",
+                      "motion-safe:active:scale-[0.98]"
+                    )}
+                  >
+                    <div className="flex items-center justify-center w-12 h-12 rounded-full bg-error/10 border border-error/20 text-error mb-space-2">
+                      <IconWrapper icon={ShieldAlert} size="standard" />
                     </div>
-                  )}
+                    <Heading level={3} className="!text-sm font-semibold mb-space-1 text-error">
+                      {t("form.voiceErrorTitle")}
+                    </Heading>
+                    <ParagraphText variant="caption" className="max-w-[28ch] !text-text-secondary mb-space-2">
+                      {t(`form.voiceError${speechError === "permission-denied" ? "PermissionDenied" : speechError === "no-speech" ? "NoSpeech" : speechError === "network" ? "Network" : speechError === "aborted" ? "Aborted" : "Generic"}`)}
+                    </ParagraphText>
+                    <span className="text-[11px] font-mono uppercase tracking-[0.15em] text-text-tertiary group-hover:text-text-primary transition-colors">
+                      {t("form.voiceTryAgain")}
+                    </span>
+                  </motion.div>
+                ) : isListening ? (
+                  /* State C: Listening Active */
+                  <motion.div
+                    key="listening"
+                    initial={{ opacity: 0, transform: "scale(0.98)" }}
+                    animate={{ opacity: 1, transform: "scale(1)" }}
+                    exit={{ opacity: 0, transform: "scale(0.98)" }}
+                    transition={{ duration: 0.15, ease: "easeOut" }}
+                    role="region"
+                    aria-label="Voice recording session active"
+                    className="bg-surface border border-border rounded-md p-space-4 flex flex-col items-center justify-center text-center min-h-[176px] relative outline-none flex-1"
+                  >
+                    {/* Recording Timer Centered in Flow */}
+                    <div className="font-mono text-xs font-semibold text-text-secondary bg-surface-variant/80 border border-border px-space-2 py-0.5 rounded-full flex items-center gap-1.5 mb-space-2" aria-label="Recording duration">
+                      <span className="w-1.5 h-1.5 rounded-full bg-error animate-pulse"></span>
+                      {formatDuration(speechDuration)}
+                    </div>
 
-                  {/* Actions Panel */}
-                  <div className="flex flex-col gap-space-2 w-full max-w-[280px] mt-space-3">
-                    <Button
-                      type="button"
-                      variant="primary"
-                      onClick={handleStopVoice}
-                      className="w-full !min-h-[36px] !h-[36px] !px-space-3 text-xs rounded-md flex items-center justify-center gap-space-1 font-semibold"
-                      aria-label={t("form.voiceStop")}
-                    >
-                      <IconWrapper icon={Check} className="h-3.5 w-3.5" />
-                      <span>{t("form.voiceStop")}</span>
-                    </Button>
-                    <Button
-                      type="button"
-                      variant="secondary"
-                      onClick={handleCancelVoice}
-                      className="w-full !min-h-[36px] !h-[36px] !px-space-3 text-xs rounded-md border border-border-strong hover:bg-surface-variant flex items-center justify-center gap-space-1 font-semibold"
-                      aria-label={t("form.voiceCancel")}
-                    >
-                      <IconWrapper icon={X} className="h-3.5 w-3.5" />
-                      <span>{t("form.voiceCancel")}</span>
-                    </Button>
-                  </div>
-                </div>
-              ) : (
-                /* State D: Supported & Idle */
-                <div
-                  role="button"
-                  tabIndex={0}
-                  onClick={handleStartVoice}
-                  onKeyDown={(e) => {
-                    if (e.key === "Enter" || e.key === " ") {
-                      e.preventDefault();
-                      handleStartVoice();
-                    }
-                  }}
-                  aria-label={t("form.voiceLabel")}
-                  className={cn(
-                    "bg-surface border border-border rounded-md p-space-4 flex flex-col items-center justify-center text-center cursor-pointer transition-all duration-150 select-none min-h-[176px] relative group outline-none",
-                    "hover:bg-surface-variant focus-visible:bg-surface-variant focus-visible:border-text-primary",
-                    "focus-visible:shadow-[0_0_0_2px_var(--bg),0_0_0_4px_var(--text-primary)]",
-                    "active:scale-[0.98]"
-                  )}
-                >
-                  <div className="flex items-center justify-center w-12 h-12 rounded-full bg-surface-variant border border-border text-text-secondary group-hover:text-text-primary transition-colors duration-150 mb-space-2">
-                    <IconWrapper icon={Mic} size="standard" />
-                  </div>
-                  
-                  <Heading level={3} className="!text-sm font-semibold mb-space-1 text-text-primary">
-                    {t("form.voiceLabel")}
-                  </Heading>
-                  
-                  <ParagraphText variant="caption" className="max-w-[24ch] !text-text-secondary">
-                    {t("form.voiceTapToSpeak")}
-                  </ParagraphText>
-                </div>
-              )}
+                    {/* Pulsing visual halo (respects prefers-reduced-motion, hardware accelerated) */}
+                    <div className="relative mb-space-2">
+                      <motion.div
+                        animate={isReducedMotion ? {} : {
+                          transform: ["scale(1)", "scale(1.08)", "scale(1)"],
+                          opacity: [1, 0.6, 1],
+                        }}
+                        transition={{
+                          duration: 1.5,
+                          repeat: Infinity,
+                          ease: "easeInOut",
+                        }}
+                        className="absolute -inset-2 rounded-full bg-text-primary/10"
+                      />
+                      <div className="relative flex items-center justify-center w-10 h-10 rounded-full bg-text-primary text-surface border border-text-primary">
+                        <IconWrapper icon={Mic} size="standard" />
+                      </div>
+                    </div>
+
+                    <Heading level={3} className="!text-sm font-semibold mb-space-1 text-text-primary" aria-live="polite">
+                      {t("form.voiceListening")}
+                    </Heading>
+
+                    {/* Visual Waveform (pure decoration, respects reduced motion, scaleY GPU-friendly) */}
+                    {!isReducedMotion && (
+                      <div className="flex items-center gap-1 h-3 mt-space-1 mb-space-3">
+                        <motion.span animate={{ scaleY: [0.3, 0.7, 0.3] }} transition={{ repeat: Infinity, duration: 0.6, delay: 0.1 }} className="w-0.5 h-3.5 bg-text-primary/40 rounded-full origin-center" />
+                        <motion.span animate={{ scaleY: [0.4, 1.0, 0.4] }} transition={{ repeat: Infinity, duration: 0.5, delay: 0.2 }} className="w-0.5 h-3.5 bg-text-primary/60 rounded-full origin-center" />
+                        <motion.span animate={{ scaleY: [0.3, 0.8, 0.3] }} transition={{ repeat: Infinity, duration: 0.7, delay: 0 }} className="w-0.5 h-3.5 bg-text-primary rounded-full origin-center" />
+                        <motion.span animate={{ scaleY: [0.5, 0.9, 0.5] }} transition={{ repeat: Infinity, duration: 0.4, delay: 0.3 }} className="w-0.5 h-3.5 bg-text-primary/75 rounded-full origin-center" />
+                        <motion.span animate={{ scaleY: [0.3, 0.5, 0.3] }} transition={{ repeat: Infinity, duration: 0.8, delay: 0.15 }} className="w-0.5 h-3.5 bg-text-primary/50 rounded-full origin-center" />
+                      </div>
+                    )}
+
+                    {/* Actions Panel */}
+                    <div className="flex flex-col gap-space-2 w-full max-w-[280px] mt-space-3">
+                      <Button
+                        type="button"
+                        variant="primary"
+                        onClick={handleStopVoice}
+                        className="w-full !min-h-[36px] !h-[36px] !px-space-3 text-xs rounded-md flex items-center justify-center gap-space-1 font-semibold"
+                        aria-label={t("form.voiceStop")}
+                      >
+                        <IconWrapper icon={Check} className="h-3.5 w-3.5" />
+                        <span>{t("form.voiceStop")}</span>
+                      </Button>
+                      <Button
+                        type="button"
+                        variant="secondary"
+                        onClick={handleCancelVoice}
+                        className="w-full !min-h-[36px] !h-[36px] !px-space-3 text-xs rounded-md border border-border-strong hover:bg-surface-variant flex items-center justify-center gap-space-1 font-semibold"
+                        aria-label={t("form.voiceCancel")}
+                      >
+                        <IconWrapper icon={X} className="h-3.5 w-3.5" />
+                        <span>{t("form.voiceCancel")}</span>
+                      </Button>
+                    </div>
+                  </motion.div>
+                ) : (
+                  /* State D: Supported & Idle */
+                  <motion.div
+                    key="idle"
+                    initial={{ opacity: 0, transform: "scale(0.98)" }}
+                    animate={{ opacity: 1, transform: "scale(1)" }}
+                    exit={{ opacity: 0, transform: "scale(0.98)" }}
+                    transition={{ duration: 0.15, ease: "easeOut" }}
+                    role="button"
+                    tabIndex={0}
+                    onClick={handleStartVoice}
+                    onKeyDown={(e) => {
+                      if (e.key === "Enter" || e.key === " ") {
+                        e.preventDefault();
+                        handleStartVoice();
+                      }
+                    }}
+                    aria-label={t("form.voiceLabel")}
+                    className={cn(
+                      "bg-surface border border-border rounded-md p-space-4 flex flex-col items-center justify-center text-center cursor-pointer transition-all duration-150 select-none min-h-[176px] relative group outline-none flex-1",
+                      "interactive-card focus-visible:border-text-primary",
+                      "focus-visible:shadow-[0_0_0_2px_var(--bg),0_0_0_4px_var(--text-primary)]",
+                      "motion-safe:active:scale-[0.98]"
+                    )}
+                  >
+                    <div className="flex items-center justify-center w-12 h-12 rounded-full bg-surface-variant border border-border text-text-secondary group-hover:text-text-primary transition-colors duration-150 mb-space-2">
+                      <IconWrapper icon={Mic} size="standard" />
+                    </div>
+                    
+                    <Heading level={3} className="!text-sm font-semibold mb-space-1 text-text-primary">
+                      {t("form.voiceLabel")}
+                    </Heading>
+                    
+                    <ParagraphText variant="caption" className="max-w-[24ch] !text-text-secondary">
+                      {t("form.voiceTapToSpeak")}
+                    </ParagraphText>
+                  </motion.div>
+                )}
+              </AnimatePresence>
             </div>
 
           </div>
@@ -743,7 +839,7 @@ function DetailsContent() {
           <Button
             type="button"
             variant="secondary"
-            className="w-full sm:w-1/3 flex items-center justify-center gap-space-2 transition-transform"
+            className="w-full sm:w-1/3 flex items-center justify-center gap-space-2"
             onClick={handleCancel}
           >
             <IconWrapper icon={ArrowLeft} className="h-4 w-4" />
@@ -752,12 +848,12 @@ function DetailsContent() {
           <Button
             type="submit"
             variant="primary"
-            className="w-full sm:w-2/3 flex items-center justify-center gap-space-2 group transition-all"
+            className="w-full sm:w-2/3 flex items-center justify-center gap-space-2 group btn-hover-group"
           >
             <span>{t("common.continue")}</span>
             <IconWrapper 
               icon={Check} 
-              className="h-4 w-4 transition-transform duration-150 group-hover:scale-110 motion-safe:active:scale-90" 
+              className="h-4 w-4 transition-transform duration-150 ease-out btn-hover-scale" 
             />
           </Button>
         </div>
@@ -768,13 +864,7 @@ function DetailsContent() {
 
 export default function DetailsPage() {
   return (
-    <Suspense fallback={
-      <div className="flex flex-col flex-1 items-center justify-center py-space-12">
-        <ParagraphText variant="regular" className="animate-pulse">
-          Loading report details...
-        </ParagraphText>
-      </div>
-    }>
+    <Suspense fallback={<DetailsSkeleton />}>
       <DetailsContent />
     </Suspense>
   );
