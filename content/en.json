@@ -42,7 +42,17 @@
     "voiceTapToSpeak": "Tap mic to dictate description",
     "voiceNotSupported": "Voice input is not supported in this browser.",
     "voiceError": "Voice error occurred. Please type manually.",
-    "voiceMockText": "There is a large pothole near the main intersection causing traffic delays."
+    "voiceMockText": "There is a large pothole near the main intersection causing traffic delays.",
+    "voiceStop": "Stop & Keep",
+    "voiceCancel": "Cancel",
+    "voiceErrorTitle": "Voice Input Error",
+    "voiceTryAgain": "Tap to try again",
+    "voiceErrorPermissionDenied": "Microphone permission denied. Please allow microphone access in browser settings.",
+    "voiceErrorNoSpeech": "No speech detected. Please speak clearly into the microphone.",
+    "voiceErrorNetwork": "Network error occurred. Please check your internet connection.",
+    "voiceErrorCancelled": "Voice recording cancelled.",
+    "voiceErrorAborted": "Voice input stopped.",
+    "voiceErrorGeneric": "Speech recognition failed. Please try again or type manually."
   },
   "validation": {
     "emptyDescription": "Description cannot be empty.",
