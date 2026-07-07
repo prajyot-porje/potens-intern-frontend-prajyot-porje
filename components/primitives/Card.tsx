@@ -15,7 +15,7 @@ export const Card = React.forwardRef<HTMLDivElement, CardProps>(
     const isReduced = useReducedMotion();
 
     const baseStyles = cn(
-      "bg-surface rounded-lg border border-border transition-colors duration-150 p-space-4 text-text-primary",
+      "bg-surface rounded-lg border border-border transition-all duration-150 p-space-4 text-text-primary",
       interactive && "cursor-pointer hover:bg-surface-variant focus-visible:bg-surface-variant custom-focus"
     );
 
@@ -26,7 +26,7 @@ export const Card = React.forwardRef<HTMLDivElement, CardProps>(
           className={cn(baseStyles, className)}
           role="button"
           tabIndex={0}
-          whileTap={isReduced ? undefined : { scale: 0.99 }}
+          whileTap={isReduced ? undefined : { scale: 0.98 }}
           {...props}
         >
           {children}

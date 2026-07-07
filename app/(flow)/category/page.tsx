@@ -28,17 +28,85 @@ function CategoryContent() {
   const initialCategory = searchParams.get("category") || "";
   const [selectedCategory, setSelectedCategory] = useState(initialCategory);
 
+  const handleSelectCategory = (key: string) => {
+    setSelectedCategory(key);
+    // Sync category state to URL parameters shallowly
+    const params = new URLSearchParams(searchParams.toString());
+    params.set("category", key);
+    router.replace(`/category?${params.toString()}`, { scroll: false });
+  };
+
   const handleContinue = () => {
     if (selectedCategory) {
       router.push(`/details?category=${selectedCategory}`);
     }
   };
 
-  const handleCardKeyDown = (e: React.KeyboardEvent, key: string) => {
-    if (e.key === "Enter" || e.key === " ") {
-      e.preventDefault();
-      setSelectedCategory(key);
+  // Accessible Arrow-Key Grid Navigation (Left/Right/Up/Down, Home, End, Space/Enter to select)
+  const handleGridKeyDown = (e: React.KeyboardEvent<HTMLDivElement>) => {
+    const cards = Array.from(
+      e.currentTarget.querySelectorAll('[role="radio"]')
+    ) as HTMLElement[];
+    
+    const activeIndex = cards.indexOf(document.activeElement as HTMLElement);
+    if (activeIndex === -1) return;
+
+    let nextIndex = activeIndex;
+    const isMobile = window.innerWidth < 640; // sm breakpoint is 640px
+
+    switch (e.key) {
+      case "ArrowRight":
+        nextIndex = (activeIndex + 1) % cards.length;
+        break;
+      case "ArrowLeft":
+        nextIndex = (activeIndex - 1 + cards.length) % cards.length;
+        break;
+      case "ArrowDown":
+        if (isMobile) {
+          nextIndex = (activeIndex + 1) % cards.length;
+        } else {
+          // 2-column layout navigation
+          nextIndex = activeIndex + 2;
+          if (nextIndex >= cards.length) {
+            nextIndex = activeIndex % 2; // wrap around to top row
+          }
+        }
+        break;
+      case "ArrowUp":
+        if (isMobile) {
+          nextIndex = (activeIndex - 1 + cards.length) % cards.length;
+        } else {
+          // 2-column layout navigation
+          nextIndex = activeIndex - 2;
+          if (nextIndex < 0) {
+            // wrap around to bottom row
+            nextIndex = cards.length - 2 + (activeIndex % 2);
+            if (nextIndex >= cards.length) {
+              nextIndex = cards.length - 1;
+            }
+          }
+        }
+        break;
+      case "Home":
+        nextIndex = 0;
+        break;
+      case "End":
+        nextIndex = cards.length - 1;
+        break;
+      case "Enter":
+      case " ":
+        e.preventDefault();
+        const catKey = cards[activeIndex].getAttribute("data-category");
+        if (catKey) {
+          handleSelectCategory(catKey);
+        }
+        return;
+      default:
+        return; // Allow tab and other defaults
     }
+
+    e.preventDefault();
+    cards[nextIndex]?.focus();
   };
 
   return (
@@ -59,35 +127,64 @@ function CategoryContent() {
           className="grid grid-cols-1 sm:grid-cols-2 gap-space-4 my-auto"
           role="radiogroup"
           aria-label={t("category.title")}
+          onKeyDown={handleGridKeyDown}
         >
           {CATEGORY_LIST.map((cat) => {
             const IconComp = iconMap[cat.icon] || HelpCircle;
             const isSelected = selectedCategory === cat.key;
+            
+            // Standard ARIA tab index: only selected (or first) item is focusable, rest are reached via arrow keys
+            const tabIndex = isSelected ? 0 : (selectedCategory === "" && cat.key === "roads" ? 0 : -1);
 
             return (
               <Card
                 key={cat.key}
+                data-category={cat.key}
                 interactive
-                onClick={() => setSelectedCategory(cat.key)}
-                onKeyDown={(e) => handleCardKeyDown(e, cat.key)}
+                onClick={() => handleSelectCategory(cat.key)}
                 aria-checked={isSelected}
                 role="radio"
-                tabIndex={0}
+                tabIndex={tabIndex}
                 className={cn(
-                  "flex items-start gap-space-4 border transition-all duration-150 text-left p-space-4 min-h-[96px] cursor-pointer",
+                  "group flex items-start gap-space-4 border text-left p-space-4 min-h-[96px] cursor-pointer",
+                  "transition-all duration-150 ease-[cubic-bezier(0.22,1,0.36,1)]",
+                  // Hover/Focus: subtle lift and bg shift
+                  "hover:bg-surface-variant hover:border-border-strong motion-safe:hover:-translate-y-[0.5px]",
+                  "focus-visible:bg-surface-variant focus-visible:border-border-strong motion-safe:focus-visible:-translate-y-[0.5px]",
                   isSelected
                     ? "border-text-primary bg-surface-variant ring-1 ring-text-primary/10"
-                    : "border-border hover:border-border-strong hover:bg-surface/50"
+                    : "border-border bg-surface"
                 )}
               >
-                <div className="flex items-center justify-center w-12 h-12 rounded-md bg-surface-variant text-text-primary border border-border shrink-0">
+                {/* Icon wrapper - inverts when card is selected */}
+                <div className={cn(
+                  "flex items-center justify-center w-12 h-12 rounded-md shrink-0 border",
+                  "transition-all duration-150 ease-[cubic-bezier(0.22,1,0.36,1)]",
+                  isSelected
+                    ? "bg-text-primary border-text-primary text-surface"
+                    : "bg-surface-variant border-border text-text-secondary group-hover:text-text-primary group-hover:border-border-strong group-focus-visible:text-text-primary group-focus-visible:border-border-strong"
+                )}>
                   <IconWrapper icon={IconComp} size="standard" />
                 </div>
+                
+                {/* Labels */}
                 <div className="flex flex-col gap-space-1">
-                  <Heading level={2} className="!text-sm font-semibold leading-tight">
+                  <Heading 
+                    level={2} 
+                    className={cn(
+                      "!text-sm font-semibold leading-tight transition-colors duration-150 ease-[cubic-bezier(0.22,1,0.36,1)]",
+                      isSelected ? "text-text-primary" : "text-text-primary/90 group-hover:text-text-primary group-focus-visible:text-text-primary"
+                    )}
+                  >
                     {t(cat.labelKey)}
                   </Heading>
-                  <ParagraphText variant="caption" className="line-clamp-2 leading-relaxed !text-text-secondary">
+                  <ParagraphText 
+                    variant="caption" 
+                    className={cn(
+                      "line-clamp-2 leading-relaxed transition-colors duration-150 ease-[cubic-bezier(0.22,1,0.36,1)]",
+                      isSelected ? "text-text-secondary" : "text-text-tertiary group-hover:text-text-secondary group-focus-visible:text-text-secondary"
+                    )}
+                  >
                     {t(cat.descKey)}
                   </ParagraphText>
                 </div>
@@ -104,10 +201,13 @@ function CategoryContent() {
           fullWidth
           disabled={!selectedCategory}
           onClick={handleContinue}
-          className="w-full flex items-center justify-center gap-space-2 disabled:opacity-50 disabled:cursor-not-allowed group transition-all"
+          className="w-full flex items-center justify-center gap-space-2 disabled:opacity-50 disabled:cursor-not-allowed disabled:pointer-events-none group transition-all duration-200 ease-[cubic-bezier(0.22,1,0.36,1)]"
         >
           <span>{t("common.continue")}</span>
-          <IconWrapper icon={ArrowRight} className="h-4 w-4 transition-transform group-hover:translate-x-1" />
+          <IconWrapper 
+            icon={ArrowRight} 
+            className="h-4 w-4 transition-transform duration-200 ease-[cubic-bezier(0.22,1,0.36,1)] motion-safe:group-hover:translate-x-1" 
+          />
         </Button>
       </div>
     </ReducedMotionWrapper>
