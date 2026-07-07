@@ -7,6 +7,7 @@ import { useTheme } from "../../hooks/useTheme";
 import { useLanguage } from "../../hooks/useLanguage";
 import { Heading, ParagraphText, MonoText } from "../../components/typography";
 import { Button, IconWrapper } from "../../components/primitives";
+import { OfflineBanner, InstallPrompt } from "../../components/feedback";
 
 export default function FlowLayout({ children }: { children: React.ReactNode }) {
   const router = useRouter();
@@ -35,6 +36,10 @@ export default function FlowLayout({ children }: { children: React.ReactNode }) 
 
   return (
     <div className="flex flex-col flex-1 min-h-screen py-space-4 md:py-space-6 relative">
+      {/* PWA offline indicator */}
+      <OfflineBanner />
+      {/* PWA install prompt */}
+      <InstallPrompt />
       {/* Header section with theme/lang controls */}
       <header className="flex items-center justify-between border-b border-border pb-space-4 h-16 min-h-16 relative z-10">
         <div className="flex items-center gap-space-2 min-w-[120px]">

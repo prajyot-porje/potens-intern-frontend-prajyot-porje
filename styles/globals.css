@@ -133,3 +133,31 @@ input:focus, textarea:focus, select:focus, button:focus {
 p, span, li {
   max-width: 60ch;
 }
+
+/* ── PWA UI Animations ─────────────────────────────────────────────────── */
+
+@keyframes slide-down {
+  from { transform: translateY(-100%); opacity: 0; }
+  to   { transform: translateY(0);     opacity: 1; }
+}
+
+@keyframes slide-up {
+  from { transform: translateY(100%); opacity: 0; }
+  to   { transform: translateY(0);    opacity: 1; }
+}
+
+.animate-slide-down {
+  animation: slide-down 250ms cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+.animate-slide-up {
+  animation: slide-up 250ms cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .animate-slide-down,
+  .animate-slide-up {
+    animation: none;
+  }
+}
+
