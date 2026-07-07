@@ -65,6 +65,13 @@ export default function RootLayout({
                 {children}
               </Container>
             </PageWrapper>
+            {/* Screen Reader Announcement Live Region */}
+            <div
+              id="sr-announcement"
+              className="sr-only"
+              aria-live="polite"
+              aria-atomic="true"
+            ></div>
           </ThemeProvider>
         </LanguageProvider>
       </body>

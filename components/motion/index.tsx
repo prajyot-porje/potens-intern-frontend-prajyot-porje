@@ -171,3 +171,122 @@ export const ReducedMotionWrapper: React.FC<ReducedMotionWrapperProps> = ({
     </motion.div>
   );
 };
+
+/**
+ * Signature success checkmark draw animation.
+ * Animated checkmark SVG outline draws itself via stroke-dashoffset.
+ * Fallbacks to standard fast fade if reduced motion is preferred.
+ */
+export const CheckmarkDraw: React.FC = () => {
+  const isReduced = useReducedMotion();
+
+  const circleVariants = {
+    initial: { pathLength: 0, opacity: 0 },
+    animate: {
+      pathLength: 1.02,
+      opacity: 1,
+      transition: {
+        duration: isReduced ? 0.2 : 0.45,
+        ease: (isReduced ? "linear" : easeProductive) as any,
+      },
+    },
+  };
+
+  const checkVariants = {
+    initial: { pathLength: 0, opacity: 0 },
+    animate: {
+      pathLength: 1,
+      opacity: 1,
+      transition: {
+        delay: isReduced ? 0.05 : 0.2, // starts mid-way through circle draw
+        duration: isReduced ? 0.2 : 0.3,
+        ease: (isReduced ? "linear" : easeSignature) as any,
+      },
+    },
+  };
+
+  return (
+    <svg
+      xmlns="http://www.w3.org/2000/svg"
+      viewBox="0 0 52 52"
+      className="w-16 h-16 text-success shrink-0"
+    >
+      <motion.circle
+        cx="26"
+        cy="26"
+        r="24"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="3.5"
+        variants={circleVariants}
+        initial="initial"
+        animate="animate"
+      />
+      <motion.path
+        d="M16 26l7 7 14-14"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="4"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        variants={checkVariants}
+        initial="initial"
+        animate="animate"
+      />
+    </svg>
+  );
+};
+
+interface StaggeredRefIdProps {
+  id: string;
+}
+
+/**
+ * Technical Reference ID stagger reveal.
+ * Characters fade and slide up in sequence after the checkmark finishes.
+ * Fallbacks to simple mono text if reduced motion is preferred.
+ */
+export const StaggeredRefId: React.FC<StaggeredRefIdProps> = ({ id }) => {
+  const isReduced = useReducedMotion();
+
+  if (isReduced) {
+    return <span className="font-mono">{id}</span>;
+  }
+
+  const containerVariants = {
+    initial: {},
+    animate: {
+      transition: {
+        staggerChildren: 0.04, // 40ms delay per character
+        delayChildren: 0.5,   // starts right after checkmark draws (~500ms)
+      },
+    },
+  };
+
+  const charVariants = {
+    initial: { opacity: 0, y: 4 },
+    animate: {
+      opacity: 1,
+      y: 0,
+      transition: {
+        duration: 0.15, // 150ms per character
+        ease: easeProductive,
+      },
+    },
+  };
+
+  return (
+    <motion.span
+      variants={containerVariants}
+      initial="initial"
+      animate="animate"
+      className="inline-flex font-mono"
+    >
+      {id.split("").map((char, index) => (
+        <motion.span key={index} variants={charVariants} className="inline-block">
+          {char === " " ? "\u00A0" : char}
+        </motion.span>
+      ))}
+    </motion.span>
+  );
+};

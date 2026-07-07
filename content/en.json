@@ -47,7 +47,9 @@
   "validation": {
     "emptyDescription": "Description cannot be empty.",
     "tooShortDescription": "Description must be at least 10 characters.",
-    "tooLongDescription": "Description cannot exceed 500 characters."
+    "tooLongDescription": "Description cannot exceed 500 characters.",
+    "invalidImage": "Failed to process image. Please try another one.",
+    "imageTooLarge": "Image is too large. Please select a smaller photo (under 1.5MB)."
   },
   "confirmation": {
     "successTitle": "Report Submitted",
@@ -56,6 +58,7 @@
     "refCopied": "Reference ID copied!",
     "categoryLabel": "Category",
     "descriptionLabel": "Description",
+    "photoLabel": "Attached Photo",
     "statusLabel": "Status",
     "statusSubmitted": "Submitted to Registry",
     "statusQueued": "Queued Offline (Pending Sync)",

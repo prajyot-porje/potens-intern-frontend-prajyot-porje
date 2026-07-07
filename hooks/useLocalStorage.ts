@@ -22,7 +22,10 @@ export function useLocalStorage<T>(key: string, initialValue: T) {
         });
       }
     } catch (error) {
-      console.error(`Error reading localStorage key "${key}":`, error);
+      console.error(`Error reading localStorage key "${key}", clearing corrupted data:`, error);
+      try {
+        window.localStorage.removeItem(key);
+      } catch (e) {}
       Promise.resolve().then(() => {
         setIsMounted(true);
       });

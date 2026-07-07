@@ -1,9 +1,10 @@
 "use client";
 
-import React, { useState, Suspense } from "react";
+import React, { useState, useEffect, Suspense } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { Road, Trash2, Droplet, Lightbulb, ShieldAlert, HelpCircle, ArrowRight } from "lucide-react";
 import { useLanguage } from "@/hooks/useLanguage";
+import { useLocalStorage } from "@/hooks/useLocalStorage";
 import { DisplayText, Heading, ParagraphText } from "@/components/typography";
 import { Button, Card, Section, IconWrapper } from "@/components/primitives";
 import { CATEGORY_LIST } from "@/lib/utils/constants";
@@ -24,12 +25,28 @@ function CategoryContent() {
   const searchParams = useSearchParams();
   const { t } = useLanguage();
   
-  // Read category from URL parameter to support back navigation state preservation
-  const initialCategory = searchParams.get("category") || "";
-  const [selectedCategory, setSelectedCategory] = useState(initialCategory);
+  // Persist selected category draft in localStorage
+  const [draftCategory, setDraftCategory] = useLocalStorage<string>("nagrik_draft_category", "");
+  const [selectedCategory, setSelectedCategory] = useState("");
+
+  // Sync category from URL parameter or localStorage draft on mount/search parameter change
+  useEffect(() => {
+    const urlCategory = searchParams.get("category");
+    if (urlCategory) {
+      setSelectedCategory(urlCategory);
+      setDraftCategory(urlCategory);
+    } else if (draftCategory) {
+      setSelectedCategory(draftCategory);
+      // Sync URL shallowly with draft category
+      const params = new URLSearchParams(searchParams.toString());
+      params.set("category", draftCategory);
+      router.replace(`/category?${params.toString()}`, { scroll: false });
+    }
+  }, [searchParams, draftCategory, setDraftCategory, router]);
 
   const handleSelectCategory = (key: string) => {
     setSelectedCategory(key);
+    setDraftCategory(key);
     // Sync category state to URL parameters shallowly
     const params = new URLSearchParams(searchParams.toString());
     params.set("category", key);

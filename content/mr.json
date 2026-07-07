@@ -47,7 +47,9 @@
   "validation": {
     "emptyDescription": "वर्णन रिकामे असू शकत नाही.",
     "tooShortDescription": "वर्णन किमान १० अक्षरांचे असावे.",
-    "tooLongDescription": "वर्णन ५०० अक्षरांपेक्षा जास्त असू शकत नाही."
+    "tooLongDescription": "वर्णन ५०० अक्षरांपेक्षा जास्त असू शकत नाही.",
+    "invalidImage": "फोटो प्रक्रिया करण्यात अयशस्वी. कृपया दुसरा फोटो निवडा.",
+    "imageTooLarge": "फोटोचा आकार खूप मोठा आहे. कृपया लहान फोटो निवडा (1.5MB पेक्षा लहान)."
   },
   "confirmation": {
     "successTitle": "तक्रार दाखल झाली",
@@ -56,6 +58,7 @@
     "refCopied": "संदर्भ आयडी कॉपी केला!",
     "categoryLabel": "प्रवर्ग",
     "descriptionLabel": "वर्णन",
+    "photoLabel": "जोडलेला फोटो",
     "statusLabel": "स्थिती",
     "statusSubmitted": "नोंदणी कार्यालयात सादर केले",
     "statusQueued": "ऑफलाईन रांगेत (सिंक प्रलंबित)",

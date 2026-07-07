@@ -4,9 +4,12 @@ import React, { useState, useRef, useEffect, Suspense } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { Camera, Mic, Check, HelpCircle, Road, Trash2, Droplet, Lightbulb, ShieldAlert, ArrowLeft } from "lucide-react";
 import { useLanguage } from "@/hooks/useLanguage";
+import { useLocalStorage } from "@/hooks/useLocalStorage";
 import { DisplayText, Heading, ParagraphText } from "@/components/typography";
 import { Button, Card, Section, TextArea, IconWrapper } from "@/components/primitives";
 import { CATEGORIES } from "@/lib/utils/constants";
+import { generateReferenceId } from "@/lib/utils/reference-id";
+import { saveSubmission, Submission } from "@/lib/storage";
 import { ReducedMotionWrapper } from "@/components/motion";
 import { cn } from "@/lib/utils";
 
@@ -19,23 +22,92 @@ const iconMap: Record<string, React.ComponentType<any>> = {
   HelpCircle,
 };
 
+/**
+ * Compresses an image file using Canvas.
+ * Resizes to a maximum width of 800px and converts to JPEG at 0.7 quality.
+ */
+function compressImage(file: File): Promise<string> {
+  return new Promise((resolve, reject) => {
+    if (!file.type.startsWith("image/")) {
+      reject(new Error("File is not an image"));
+      return;
+    }
+
+    const reader = new FileReader();
+    reader.onload = (event) => {
+      const img = new Image();
+      img.onload = () => {
+        try {
+          const canvas = document.createElement("canvas");
+          let width = img.width;
+          let height = img.height;
+
+          // Scale down if width exceeds 800px
+          const MAX_WIDTH = 800;
+          if (width > MAX_WIDTH) {
+            height = Math.round((height * MAX_WIDTH) / width);
+            width = MAX_WIDTH;
+          }
+
+          canvas.width = width;
+          canvas.height = height;
+
+          const ctx = canvas.getContext("2d");
+          if (!ctx) {
+            reject(new Error("Failed to get 2D canvas context"));
+            return;
+          }
+
+          ctx.drawImage(img, 0, 0, width, height);
+
+          // Get high-compression JPEG data URL
+          const compressedDataUrl = canvas.toDataURL("image/jpeg", 0.7);
+          resolve(compressedDataUrl);
+        } catch (error) {
+          reject(error);
+        }
+      };
+      img.onerror = () => {
+        reject(new Error("Failed to load image element"));
+      };
+      img.src = event.target?.result as string;
+    };
+    reader.onerror = () => {
+      reject(new Error("Failed to read file"));
+    };
+    reader.readAsDataURL(file);
+  });
+}
+
 function DetailsContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const { t } = useLanguage();
+  const { t, locale } = useLanguage();
 
-  const categoryKey = searchParams.get("category") || "other";
+  const categoryKey = searchParams.get("category") || "";
   const categoryConfig = CATEGORIES[categoryKey] || CATEGORIES.other;
   const IconComp = iconMap[categoryConfig.icon] || HelpCircle;
 
-  // Form states
-  const [description, setDescription] = useState("");
-  const [photo, setPhoto] = useState<string | null>(null);
+  // Form states persisted in localStorage
+  const [description, setDescription] = useLocalStorage<string>("nagrik_draft_description", "");
+  const [photo, setPhoto] = useLocalStorage<string | null>("nagrik_draft_photo", null);
+  
+  // Validation and UI states
+  const [descriptionError, setDescriptionError] = useState<string | null>(null);
+  const [imageError, setImageError] = useState<string | null>(null);
   const [isDragging, setIsDragging] = useState(false);
   const [isListening, setIsListening] = useState(false);
   const [listeningTimer, setListeningTimer] = useState<NodeJS.Timeout | null>(null);
 
   const fileInputRef = useRef<HTMLInputElement>(null);
+
+  // Redirection guard: Redirect to Category if category parameter is missing or invalid
+  useEffect(() => {
+    const urlCategory = searchParams.get("category");
+    if (!urlCategory || !CATEGORIES[urlCategory]) {
+      router.replace("/category");
+    }
+  }, [searchParams, router]);
 
   // Clean up voice timer on unmount
   useEffect(() => {
@@ -46,12 +118,95 @@ function DetailsContent() {
     };
   }, [listeningTimer]);
 
+  // Handle dynamic description changes and clear errors inline
+  const handleDescriptionChange = (val: string) => {
+    const trimmedVal = val.slice(0, 500);
+    setDescription(trimmedVal);
+
+    if (descriptionError) {
+      if (trimmedVal.trim().length === 0) {
+        setDescriptionError(t("validation.emptyDescription"));
+      } else if (trimmedVal.trim().length < 10) {
+        setDescriptionError(t("validation.tooShortDescription"));
+      } else {
+        setDescriptionError(null);
+      }
+    }
+  };
+
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    // Navigate to confirmation step with parameters (no validation block per requirements)
-    router.replace(
-      `/confirmation?category=${categoryKey}&description=${encodeURIComponent(description)}&hasPhoto=${!!photo}`
-    );
+
+    // Prevent submission if category is missing or invalid
+    if (!categoryKey || !CATEGORIES[categoryKey]) {
+      router.replace("/category");
+      return;
+    }
+
+    // Validate description
+    const trimmedDesc = description.trim();
+    let hasError = false;
+
+    if (trimmedDesc.length === 0) {
+      setDescriptionError(t("validation.emptyDescription"));
+      hasError = true;
+    } else if (trimmedDesc.length < 10) {
+      setDescriptionError(t("validation.tooShortDescription"));
+      hasError = true;
+    } else if (trimmedDesc.length > 500) {
+      setDescriptionError(t("validation.tooLongDescription"));
+      hasError = true;
+    }
+
+    // Block submission if there is an unresolved image processing error
+    if (imageError) {
+      hasError = true;
+    }
+
+    if (hasError) {
+      // Accessible focus management: focus invalid input element
+      const textarea = document.getElementById("description");
+      if (textarea) {
+        textarea.focus();
+      }
+      
+      const announcement = document.getElementById("sr-announcement");
+      if (announcement) {
+        announcement.textContent = descriptionError || imageError || "Validation error";
+      }
+      return;
+    }
+
+    // Submission flow implementation
+    const refId = generateReferenceId(categoryKey);
+    const submission: Submission = {
+      id: refId,
+      category: categoryKey,
+      description: trimmedDesc,
+      photo: photo,
+      usedVoiceInput: false, // Voice input is deferred
+      createdAt: new Date().toISOString(),
+      status: "submitted",
+      language: locale,
+    };
+
+    saveSubmission(submission);
+
+    // Clear drafts from localStorage
+    if (typeof window !== "undefined") {
+      window.localStorage.removeItem("nagrik_draft_category");
+      window.localStorage.removeItem("nagrik_draft_description");
+      window.localStorage.removeItem("nagrik_draft_photo");
+    }
+
+    // Announce successful submission to screen reader
+    const announcement = document.getElementById("sr-announcement");
+    if (announcement) {
+      announcement.textContent = t("confirmation.successTitle");
+    }
+
+    // Navigate to confirmation step replacing details screen in history
+    router.replace(`/confirmation?id=${refId}`);
   };
 
   const handleCancel = () => {
@@ -89,21 +244,55 @@ function DetailsContent() {
     }
   };
 
-  const handleFile = (file: File) => {
-    if (!file.type.startsWith("image/")) return;
+  const handleFile = async (file: File) => {
+    if (!file.type.startsWith("image/")) {
+      setImageError(t("validation.invalidImage"));
+      return;
+    }
 
-    const reader = new FileReader();
-    reader.onload = (event) => {
-      if (event.target?.result) {
-        setPhoto(event.target.result as string);
+    try {
+      // Inform screen reader of active processing
+      const announcement = document.getElementById("sr-announcement");
+      if (announcement) {
+        announcement.textContent = t("common.loading");
       }
-    };
-    reader.readAsDataURL(file);
+
+      const compressed = await compressImage(file);
+      setPhoto(compressed);
+      setImageError(null);
+
+      if (announcement) {
+        announcement.textContent = t("form.photoLabel");
+      }
+    } catch (err) {
+      console.error("Image compression failed, trying raw base64 fallback:", err);
+      // Fallback to raw FileReader
+      const reader = new FileReader();
+      reader.onload = (event) => {
+        if (event.target?.result) {
+          const rawBase64 = event.target.result as string;
+          // Check raw base64 size (limit to 1.5MB to protect local storage quota)
+          if (rawBase64.length > 1.5 * 1024 * 1024 * 1.33) {
+            setImageError(t("validation.imageTooLarge"));
+            setPhoto(null);
+          } else {
+            setPhoto(rawBase64);
+            setImageError(null);
+          }
+        }
+      };
+      reader.onerror = () => {
+        setImageError(t("validation.invalidImage"));
+        setPhoto(null);
+      };
+      reader.readAsDataURL(file);
+    }
   };
 
   const removePhoto = (e: React.MouseEvent) => {
     e.stopPropagation(); // Avoid triggering open file picker
     setPhoto(null);
+    setImageError(null);
     if (fileInputRef.current) {
       fileInputRef.current.value = "";
     }
@@ -178,12 +367,29 @@ function DetailsContent() {
             <TextArea
               id="description"
               value={description}
-              onChange={(e) => setDescription(e.target.value.slice(0, 500))}
+              onChange={(e) => handleDescriptionChange(e.target.value)}
               placeholder={t("form.descriptionPlaceholder")}
-              className="min-h-[160px] text-base"
+              className={cn(
+                "min-h-[160px] text-base transition-colors",
+                descriptionError && "border-error focus:border-error focus:shadow-[0_0_0_2px_var(--bg),0_0_0_4px_var(--error)]"
+              )}
               maxLength={500}
-              aria-describedby="description-helper"
+              aria-invalid={!!descriptionError}
+              aria-describedby={cn(
+                "description-helper",
+                descriptionError && "description-error"
+              )}
             />
+            
+            {descriptionError && (
+              <span
+                id="description-error"
+                role="alert"
+                className="text-xs text-error font-medium transition-all"
+              >
+                {descriptionError}
+              </span>
+            )}
             
             <div className="flex justify-between items-center text-xs" id="description-helper">
               <span className={cn(
@@ -204,8 +410,9 @@ function DetailsContent() {
             {/* 3. Photo Upload Card Component (Double-Bezel) */}
             <div 
               className={cn(
-                "bg-surface-variant/40 border border-border p-space-2 rounded-lg transition-colors duration-150",
-                isDragging && "border-text-primary bg-surface-variant/70"
+                "bg-surface-variant/40 border border-border p-space-2 rounded-lg transition-colors duration-150 flex flex-col justify-between",
+                isDragging && "border-text-primary bg-surface-variant/70",
+                imageError && "border-error bg-error/5"
               )}
             >
               {photo ? (
@@ -252,7 +459,8 @@ function DetailsContent() {
                     "bg-surface border border-dashed border-border-strong rounded-md p-space-4 flex flex-col items-center justify-center text-center cursor-pointer transition-all duration-150 select-none min-h-[176px] relative group outline-none",
                     "hover:bg-surface-variant focus-visible:bg-surface-variant focus-visible:border-text-primary",
                     "focus-visible:shadow-[0_0_0_2px_var(--bg),0_0_0_4px_var(--text-primary)]",
-                    "active:scale-[0.98]"
+                    "active:scale-[0.98]",
+                    imageError && "border-error focus-visible:border-error focus-visible:shadow-[0_0_0_2px_var(--bg),0_0_0_4px_var(--error)]"
                   )}
                 >
                   <input
@@ -275,6 +483,15 @@ function DetailsContent() {
                     {t("form.dragDropHint")}
                   </ParagraphText>
                 </div>
+              )}
+              {imageError && (
+                <span
+                  id="image-error"
+                  role="alert"
+                  className="text-xs text-error font-medium mt-space-2 text-center"
+                >
+                  {imageError}
+                </span>
               )}
             </div>
 
