@@ -9,6 +9,7 @@ import { Button, Card, Section, Divider, IconWrapper } from "@/components/primit
 import { CATEGORIES } from "@/lib/utils/constants";
 import { getSubmissionById, Submission } from "@/lib/storage";
 import { ReducedMotionWrapper, CheckmarkDraw, StaggeredRefId } from "@/components/motion";
+import { StatusTimeline } from "@/components/feedback";
 
 function ConfirmationContent() {
   const router = useRouter();
@@ -31,6 +32,22 @@ function ConfirmationContent() {
       setSubmission(record);
     });
   }, [submissionId, router]);
+
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+
+    const handleSync = () => {
+      const record = getSubmissionById(submissionId);
+      if (record) {
+        setSubmission(record);
+      }
+    };
+
+    window.addEventListener("submissions-synced", handleSync);
+    return () => {
+      window.removeEventListener("submissions-synced", handleSync);
+    };
+  }, [submissionId]);
 
   const handleReset = () => {
     // Navigate back to a clean category selection screen with backward transition
@@ -138,13 +155,27 @@ function ConfirmationContent() {
                 {t("confirmation.statusLabel")}
               </ParagraphText>
               <div className="flex items-center gap-2 mt-1">
-                <span className="w-2 h-2 rounded-full bg-success relative flex shrink-0">
-                  <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-success opacity-75"></span>
-                  <span className="relative inline-flex rounded-full h-2 w-2 bg-success"></span>
-                </span>
-                <ParagraphText variant="uiLabel" className="!text-success text-base font-semibold leading-none">
-                  {t("confirmation.statusSubmitted")}
-                </ParagraphText>
+                {submission.status === "queued" ? (
+                  <>
+                    <span className="w-2 h-2 rounded-full bg-warning relative flex shrink-0">
+                      <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-warning opacity-75"></span>
+                      <span className="relative inline-flex rounded-full h-2 w-2 bg-warning"></span>
+                    </span>
+                    <ParagraphText variant="uiLabel" className="!text-warning text-base font-semibold leading-none">
+                      {t("confirmation.statusQueued")}
+                    </ParagraphText>
+                  </>
+                ) : (
+                  <>
+                    <span className="w-2 h-2 rounded-full bg-success relative flex shrink-0">
+                      <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-success opacity-75"></span>
+                      <span className="relative inline-flex rounded-full h-2 w-2 bg-success"></span>
+                    </span>
+                    <ParagraphText variant="uiLabel" className="!text-success text-base font-semibold leading-none">
+                      {t("confirmation.statusSubmitted")}
+                    </ParagraphText>
+                  </>
+                )}
               </div>
             </div>
           </div>
@@ -183,6 +214,13 @@ function ConfirmationContent() {
           )}
         </Card>
       </Section>
+
+      {/* Live tracking timeline (only if submitted/synced) */}
+      {submission.status === "submitted" && (
+        <Section spacing="space-4" className="py-0">
+          <StatusTimeline />
+        </Section>
+      )}
 
       {/* Next Steps Instructions */}
       <Section spacing="space-4" className="py-0">

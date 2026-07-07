@@ -7,7 +7,7 @@ export const colors = {
     borderStrong: "#D1D1D8",
     textPrimary: "#1A1A1F",
     textSecondary: "#5A5A66",
-    textTertiary: "#8C8C99",
+    textTertiary: "#70707C",
     error: "#C4453A",
     warning: "#B8862E",
     success: "#3F7A5C",

@@ -335,6 +335,7 @@ function DetailsContent() {
     }
 
     // Submission flow implementation
+    const isOnline = typeof window !== "undefined" ? window.navigator.onLine : true;
     const refId = generateReferenceId(categoryKey);
     const submission: Submission = {
       id: refId,
@@ -343,7 +344,7 @@ function DetailsContent() {
       photo: photo,
       usedVoiceInput: usedVoiceInput,
       createdAt: new Date().toISOString(),
-      status: "submitted",
+      status: isOnline ? "submitted" : "queued",
       language: locale,
     };
 
@@ -359,7 +360,9 @@ function DetailsContent() {
     // Announce successful submission to screen reader
     const announcement = document.getElementById("sr-announcement");
     if (announcement) {
-      announcement.textContent = t("confirmation.successTitle");
+      announcement.textContent = isOnline 
+        ? t("confirmation.successTitle") 
+        : t("confirmation.statusQueued");
     }
 
     // Navigate to confirmation step replacing details screen in history

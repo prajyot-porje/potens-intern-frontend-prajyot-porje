@@ -77,11 +77,24 @@
     "newReportButton": "Submit Another Report",
     "offlineNotice": "You are currently offline. The report is queued locally."
   },
+  "timeline": {
+    "submitted": "Submitted",
+    "submittedDesc": "Your report has been successfully registered.",
+    "underReview": "Under Review",
+    "underReviewDesc": "Authorities are verifying the report details.",
+    "inProgress": "In Progress",
+    "inProgressDesc": "Action is being taken on-site to resolve the issue.",
+    "resolved": "Resolved",
+    "resolvedDesc": "The issue has been resolved. Thank you for reporting!"
+  },
   "pwa": {
     "installPrompt": "Add Nagrik to your home screen for quick access.",
     "installButton": "Install",
     "dismiss": "Not now",
     "offline": "You're offline. Previously visited content is still available.",
-    "offlineShort": "Offline"
+    "offlineShort": "Offline",
+    "offlineBanner": "You are offline. New reports will be saved locally and automatically synchronized when your connection is restored.",
+    "reconnectBanner": "Connection restored. Queued reports have been synchronized.",
+    "syncingBanner": "Synchronizing queued reports..."
   }
 }
