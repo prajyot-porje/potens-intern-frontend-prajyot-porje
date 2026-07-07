@@ -30,7 +30,7 @@ export function getSubmissions(): Submission[] {
     console.error("Error reading submissions from localStorage, clearing corrupted data:", error);
     try {
       window.localStorage.removeItem(STORAGE_KEYS.SUBMISSIONS);
-    } catch (e) {}
+    } catch {}
     return [];
   }
 }

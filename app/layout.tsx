@@ -9,12 +9,12 @@ import { PageWrapper, Container } from "../components/primitives";
 const grift = localFont({
   src: [
     {
-      path: "../public/fonts/grift-semibold.ttf",
+      path: "../public/fonts/grift-semibold.woff2",
       weight: "600",
       style: "normal",
     },
     {
-      path: "../public/fonts/grift-bold.ttf",
+      path: "../public/fonts/grift-bold.woff2",
       weight: "700",
       style: "normal",
     },
@@ -25,7 +25,7 @@ const grift = localFont({
 const instrumentSans = Instrument_Sans({
   subsets: ["latin"],
   variable: "--font-instrument",
-  weight: ["400", "500", "600", "700"],
+  weight: ["400", "500", "600"],
 });
 
 const hind = Hind({

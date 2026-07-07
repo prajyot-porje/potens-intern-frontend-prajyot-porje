@@ -11,7 +11,10 @@ import { CATEGORY_LIST } from "@/lib/utils/constants";
 import { ReducedMotionWrapper } from "@/components/motion";
 import { cn } from "@/lib/utils";
 
-const iconMap: Record<string, React.ComponentType<any>> = {
+const iconMap: Record<
+  string,
+  React.ComponentType<React.SVGProps<SVGSVGElement> & { strokeWidth?: number }>
+> = {
   Road,
   Trash2,
   Droplet,
@@ -32,8 +35,8 @@ function CategorySkeleton() {
       {/* Grid Skeleton */}
       <Section spacing="space-6" className="flex-1 flex flex-col justify-center animate-pulse">
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-space-4 my-auto">
-          {Array.from({ length: 6 }).map((_, i) => (
-            <div key={i} className="flex items-start gap-space-4 border border-border bg-surface p-space-4 min-h-[96px] rounded-lg">
+          {Array.from({ length: 6 }).map((__, i) => (
+            <div key={i} className="flex items-center gap-space-4 border border-border bg-surface p-space-4 rounded-lg">
               <div className="w-12 h-12 rounded-md bg-surface-variant shrink-0" />
               <div className="flex flex-col gap-space-2 flex-1">
                 <div className="h-4 w-24 bg-surface-variant rounded" />
@@ -65,16 +68,18 @@ function CategoryContent() {
   // Sync category from URL parameter or localStorage draft on mount/search parameter change
   useEffect(() => {
     const urlCategory = searchParams.get("category");
-    if (urlCategory) {
-      setSelectedCategory(urlCategory);
-      setDraftCategory(urlCategory);
-    } else if (draftCategory) {
-      setSelectedCategory(draftCategory);
-      // Sync URL shallowly with draft category
-      const params = new URLSearchParams(searchParams.toString());
-      params.set("category", draftCategory);
-      router.replace(`/category?${params.toString()}`, { scroll: false });
-    }
+    Promise.resolve().then(() => {
+      if (urlCategory) {
+        setSelectedCategory(urlCategory);
+        setDraftCategory(urlCategory);
+      } else if (draftCategory) {
+        setSelectedCategory(draftCategory);
+        // Sync URL shallowly with draft category
+        const params = new URLSearchParams(searchParams.toString());
+        params.set("category", draftCategory);
+        router.replace(`/category?${params.toString()}`, { scroll: false });
+      }
+    });
   }, [searchParams, draftCategory, setDraftCategory, router]);
 
   const handleSelectCategory = (key: string) => {
@@ -165,7 +170,7 @@ function CategoryContent() {
     <ReducedMotionWrapper variantType="slideHorizontal" direction={dirParam} className="flex flex-col flex-1">
       {/* Title & Description */}
       <Section spacing="space-4" className="text-left">
-        <DisplayText size="medium" className="mb-space-2 !text-3xl md:!text-4xl tracking-tight font-bold">
+        <DisplayText as="h1" size="medium" className="mb-space-2 !text-3xl md:!text-4xl tracking-tight font-bold">
           {t("category.title")}
         </DisplayText>
         <ParagraphText variant="large" className="max-w-[50ch] !text-text-secondary">
@@ -198,7 +203,7 @@ function CategoryContent() {
                 role="radio"
                 tabIndex={tabIndex}
                 className={cn(
-                  "group flex items-start gap-space-4 text-left p-space-4 min-h-[96px]",
+                  "group flex items-center gap-space-4 text-left p-space-4",
                   isSelected
                     ? "border-text-primary bg-surface-variant ring-1 ring-text-primary/10"
                     : "border-border bg-surface"

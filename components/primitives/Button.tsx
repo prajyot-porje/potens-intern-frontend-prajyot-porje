@@ -2,7 +2,6 @@
 
 import React from "react";
 import { motion, HTMLMotionProps } from "framer-motion";
-import { useReducedMotion } from "../../hooks/useReducedMotion";
 import { cn } from "../../lib/utils";
 
 export interface ButtonProps extends HTMLMotionProps<"button"> {
@@ -12,7 +11,6 @@ export interface ButtonProps extends HTMLMotionProps<"button"> {
 
 export const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
   ({ variant = "primary", fullWidth = false, className, children, ...props }, ref) => {
-    const isReduced = useReducedMotion();
 
     const baseStyles = cn(
       "inline-flex items-center justify-center rounded-md font-medium text-uiLabel cursor-pointer select-none",

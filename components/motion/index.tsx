@@ -187,7 +187,7 @@ export const CheckmarkDraw: React.FC = () => {
       opacity: 1,
       transition: {
         duration: isReduced ? 0.2 : 0.45,
-        ease: (isReduced ? "linear" : easeProductive) as any,
+        ease: (isReduced ? "linear" : easeProductive) as "linear" | [number, number, number, number],
       },
     },
   };
@@ -200,7 +200,7 @@ export const CheckmarkDraw: React.FC = () => {
       transition: {
         delay: isReduced ? 0.05 : 0.2, // starts mid-way through circle draw
         duration: isReduced ? 0.2 : 0.3,
-        ease: (isReduced ? "linear" : easeSignature) as any,
+        ease: (isReduced ? "linear" : easeSignature) as "linear" | [number, number, number, number],
       },
     },
   };

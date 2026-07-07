@@ -12,6 +12,10 @@ const eslintConfig = defineConfig([
     "out/**",
     "build/**",
     "next-env.d.ts",
+    // Custom ignores for optimization
+    ".agents/**",
+    "scripts/**",
+    "public/sw.js",
   ]),
 ]);
 

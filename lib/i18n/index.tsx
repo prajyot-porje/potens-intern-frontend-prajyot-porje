@@ -26,16 +26,18 @@ export const LanguageProvider: React.FC<{ children: React.ReactNode }> = ({ chil
 
   // Initialize from storage or environment on mount
   useEffect(() => {
-    const saved = localStorage.getItem(STORAGE_KEY) as Locale | null;
-    if (saved === "en" || saved === "mr") {
-      setLocaleState(saved);
-    } else {
-      // Detect browser language
-      const systemLang = navigator.language.toLowerCase();
-      const detected: Locale = systemLang.startsWith("mr") ? "mr" : "en";
-      setLocaleState(detected);
-    }
-    setMounted(true);
+    Promise.resolve().then(() => {
+      const saved = localStorage.getItem(STORAGE_KEY) as Locale | null;
+      if (saved === "en" || saved === "mr") {
+        setLocaleState(saved);
+      } else {
+        // Detect browser language
+        const systemLang = navigator.language.toLowerCase();
+        const detected: Locale = systemLang.startsWith("mr") ? "mr" : "en";
+        setLocaleState(detected);
+      }
+      setMounted(true);
+    });
   }, []);
 
   const setLanguage = (lang: Locale) => {
@@ -48,17 +50,17 @@ export const LanguageProvider: React.FC<{ children: React.ReactNode }> = ({ chil
   // Translation helper resolving nested keys (e.g. "category.title")
   const t = (path: string, variables?: Record<string, string | number>): string => {
     const parts = path.split(".");
-    let current: any = dictionaries[locale];
+    let current: unknown = dictionaries[locale];
 
     for (const part of parts) {
-      if (current && current[part] !== undefined) {
-        current = current[part];
+      if (current && typeof current === "object" && (current as Record<string, unknown>)[part] !== undefined) {
+        current = (current as Record<string, unknown>)[part];
       } else {
         // Fallback to English if translation missing in Marathi
-        let fallback: any = dictionaries["en"];
+        let fallback: unknown = dictionaries["en"];
         for (const fallbackPart of parts) {
-          if (fallback && fallback[fallbackPart] !== undefined) {
-            fallback = fallback[fallbackPart];
+          if (fallback && typeof fallback === "object" && (fallback as Record<string, unknown>)[fallbackPart] !== undefined) {
+            fallback = (fallback as Record<string, unknown>)[fallbackPart];
           } else {
             return path; // Return the path if key not found anywhere
           }

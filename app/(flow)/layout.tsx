@@ -18,7 +18,9 @@ export default function FlowLayout({ children }: { children: React.ReactNode }) 
   const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
-    setMounted(true);
+    Promise.resolve().then(() => {
+      setMounted(true);
+    });
   }, []);
 
   const cycleLanguage = () => {
@@ -61,7 +63,7 @@ export default function FlowLayout({ children }: { children: React.ReactNode }) 
               >
                 <Button
                   variant="secondary"
-                  className="!min-h-[40px] !h-[40px] !w-[40px] !p-0 rounded-md border border-border-strong hover:bg-surface-variant transition-transform active:scale-95 flex items-center justify-center"
+                  className="!min-h-[44px] !h-[44px] !w-[44px] !p-0 rounded-md border border-border-strong hover:bg-surface-variant transition-transform active:scale-95 flex items-center justify-center"
                   onClick={handleBack}
                   aria-label={t("common.back")}
                 >
@@ -107,7 +109,7 @@ export default function FlowLayout({ children }: { children: React.ReactNode }) 
           {/* Language Toggle */}
           <Button
             variant="secondary"
-            className="!min-h-[40px] !h-[40px] !px-space-3 text-xs flex items-center gap-space-1"
+            className="!min-h-[44px] !h-[44px] !px-space-3 text-xs flex items-center gap-space-1"
             onClick={cycleLanguage}
             aria-label="Toggle language"
           >
@@ -118,7 +120,7 @@ export default function FlowLayout({ children }: { children: React.ReactNode }) 
           {/* Theme Cycle Toggle */}
           <Button
             variant="secondary"
-            className="!min-h-[40px] !h-[40px] !w-[40px] !p-0 flex items-center justify-center overflow-hidden"
+            className="!min-h-[44px] !h-[44px] !w-[44px] !p-0 flex items-center justify-center overflow-hidden"
             onClick={toggleTheme}
             aria-label="Toggle theme"
           >

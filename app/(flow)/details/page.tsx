@@ -5,8 +5,8 @@ import { useRouter, useSearchParams } from "next/navigation";
 import { Camera, Mic, Check, HelpCircle, Road, Trash2, Droplet, Lightbulb, ShieldAlert, ArrowLeft, X } from "lucide-react";
 import { useLanguage } from "@/hooks/useLanguage";
 import { useLocalStorage } from "@/hooks/useLocalStorage";
-import { DisplayText, Heading, ParagraphText } from "@/components/typography";
-import { Button, Card, Section, TextArea, IconWrapper } from "@/components/primitives";
+import { Heading, ParagraphText } from "@/components/typography";
+import { Button, TextArea, IconWrapper } from "@/components/primitives";
 import { CATEGORIES } from "@/lib/utils/constants";
 import { generateReferenceId } from "@/lib/utils/reference-id";
 import { saveSubmission, Submission } from "@/lib/storage";
@@ -16,7 +16,10 @@ import { useSpeech } from "@/hooks/useSpeech";
 import { useReducedMotion } from "@/hooks/useReducedMotion";
 import { motion, AnimatePresence } from "framer-motion";
 
-const iconMap: Record<string, React.ComponentType<any>> = {
+const iconMap: Record<
+  string,
+  React.ComponentType<React.SVGProps<SVGSVGElement> & { strokeWidth?: number }>
+> = {
   Road,
   Trash2,
   Droplet,
@@ -276,9 +279,11 @@ function DetailsContent() {
     }
   };
 
-  const handleResetSpeechError = (e: React.MouseEvent) => {
-    e.preventDefault();
-    e.stopPropagation();
+  const handleResetSpeechError = (e?: React.MouseEvent | React.KeyboardEvent) => {
+    if (e) {
+      e.preventDefault();
+      e.stopPropagation();
+    }
     setSpeechError(null);
     // Directly trigger start listening
     setTimeout(() => {
@@ -453,6 +458,7 @@ function DetailsContent() {
 
   return (
     <ReducedMotionWrapper variantType="slideHorizontal" direction="forward" className="flex flex-col flex-1 gap-space-6">
+      <h1 className="sr-only">{t("form.title")}</h1>
       
       {/* 1. Selected Category Preview (Double-Bezel Card) */}
       <div className="bg-surface-variant/40 border border-border p-space-2 rounded-lg">
@@ -474,7 +480,7 @@ function DetailsContent() {
             type="button"
             variant="secondary"
             onClick={handleCancel}
-            className="!min-h-[36px] !h-[36px] !px-space-3 text-xs rounded-md border border-border-strong hover:bg-surface-variant transition-colors"
+            className="!min-h-[44px] !h-[44px] !px-space-3 text-xs rounded-md border border-border-strong hover:bg-surface-variant transition-colors"
           >
             {t("common.change")}
           </Button>
@@ -577,7 +583,7 @@ function DetailsContent() {
                         type="button"
                         variant="error"
                         onClick={removePhoto}
-                        className="!min-h-[40px] !h-[40px] !px-space-4 text-xs font-semibold rounded-md flex items-center gap-space-2 border border-error bg-error text-white hover:bg-error/90 active:scale-95 transition-transform btn-hover-group"
+                        className="!min-h-[44px] !h-[44px] !px-space-4 text-xs font-semibold rounded-md flex items-center gap-space-2 border border-error bg-error text-white hover:bg-error/90 active:scale-95 transition-transform btn-hover-group"
                         aria-label={t("form.removePhoto")}
                       >
                         <IconWrapper icon={Trash2} size="micro" className="transition-transform duration-150 btn-hover-scale" />
@@ -691,7 +697,7 @@ function DetailsContent() {
                     onKeyDown={(e) => {
                       if (e.key === "Enter" || e.key === " ") {
                         e.preventDefault();
-                        handleResetSpeechError(e as any);
+                        handleResetSpeechError(e);
                       }
                     }}
                     aria-label={`${t("form.voiceErrorTitle")}. ${t(`form.voiceError${speechError.charAt(0).toUpperCase() + speechError.slice(1)}` || "form.voiceError")}. ${t("form.voiceTryAgain")}`}
@@ -772,7 +778,7 @@ function DetailsContent() {
                         type="button"
                         variant="primary"
                         onClick={handleStopVoice}
-                        className="w-full !min-h-[36px] !h-[36px] !px-space-3 text-xs rounded-md flex items-center justify-center gap-space-1 font-semibold"
+                        className="w-full !min-h-[44px] !h-[44px] !px-space-3 text-xs rounded-md flex items-center justify-center gap-space-1 font-semibold"
                         aria-label={t("form.voiceStop")}
                       >
                         <IconWrapper icon={Check} className="h-3.5 w-3.5" />
@@ -782,7 +788,7 @@ function DetailsContent() {
                         type="button"
                         variant="secondary"
                         onClick={handleCancelVoice}
-                        className="w-full !min-h-[36px] !h-[36px] !px-space-3 text-xs rounded-md border border-border-strong hover:bg-surface-variant flex items-center justify-center gap-space-1 font-semibold"
+                        className="w-full !min-h-[44px] !h-[44px] !px-space-3 text-xs rounded-md border border-border-strong hover:bg-surface-variant flex items-center justify-center gap-space-1 font-semibold"
                         aria-label={t("form.voiceCancel")}
                       >
                         <IconWrapper icon={X} className="h-3.5 w-3.5" />

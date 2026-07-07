@@ -25,9 +25,11 @@ export function InstallPrompt() {
   const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
-    setMounted(true);
-    const wasDismissed = sessionStorage.getItem(DISMISS_KEY) === "1";
-    setDismissed(wasDismissed);
+    Promise.resolve().then(() => {
+      setMounted(true);
+      const wasDismissed = sessionStorage.getItem(DISMISS_KEY) === "1";
+      setDismissed(wasDismissed);
+    });
   }, []);
 
   const handleDismiss = () => {

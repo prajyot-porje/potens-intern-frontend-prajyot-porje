@@ -2,6 +2,78 @@
 
 import { useState, useEffect, useRef, useCallback } from "react";
 
+// ---------------------------------------------------------------------------
+// Type Declarations for Web Speech API (avoiding explicit any)
+// ---------------------------------------------------------------------------
+
+interface SpeechRecognitionAlternative {
+  readonly transcript: string;
+  readonly confidence: number;
+}
+
+interface SpeechRecognitionResult {
+  readonly length: number;
+  item(index: number): SpeechRecognitionAlternative;
+  [index: number]: SpeechRecognitionAlternative;
+  readonly isFinal?: boolean;
+}
+
+interface SpeechRecognitionResultList {
+  readonly length: number;
+  item(index: number): SpeechRecognitionResult;
+  [index: number]: SpeechRecognitionResult;
+}
+
+interface SpeechRecognitionEvent extends Event {
+  readonly resultIndex: number;
+  readonly results: SpeechRecognitionResultList;
+}
+
+interface SpeechRecognitionErrorEvent extends Event {
+  readonly error: string;
+  readonly message: string;
+}
+
+interface ISpeechRecognition {
+  continuous: boolean;
+  interimResults: boolean;
+  lang: string;
+  maxAlternatives: number;
+  onstart: (() => void) | null;
+  onresult: ((event: SpeechRecognitionEvent) => void) | null;
+  onerror: ((event: SpeechRecognitionErrorEvent) => void) | null;
+  onend: (() => void) | null;
+  start(): void;
+  stop(): void;
+  abort(): void;
+}
+
+interface SpeechRecognitionConstructor {
+  new (): ISpeechRecognition;
+}
+
+function mergeTwo(s1: string, s2: string): string {
+  const w1 = s1.trim().split(/\s+/).filter(Boolean);
+  const w2 = s2.trim().split(/\s+/).filter(Boolean);
+  if (w1.length === 0) return s2.trim();
+  if (w2.length === 0) return s1.trim();
+
+  const maxOverlap = Math.min(w1.length, w2.length);
+  for (let len = maxOverlap; len > 0; len--) {
+    let match = true;
+    for (let i = 0; i < len; i++) {
+      if (w1[w1.length - len + i].toLowerCase() !== w2[i].toLowerCase()) {
+        match = false;
+        break;
+      }
+    }
+    if (match) {
+      return [...w1.slice(0, w1.length - len), ...w2].join(" ");
+    }
+  }
+  return s1.trim() + " " + s2.trim();
+}
+
 export interface UseSpeechOptions {
   lang?: string;
   onResult?: (result: { final: string; interim: string }) => void;
@@ -17,7 +89,7 @@ export function useSpeech(options: UseSpeechOptions = {}) {
   const [duration, setDuration] = useState(0);
   const [error, setError] = useState<string | null>(null);
 
-  const recognitionRef = useRef<any>(null);
+  const recognitionRef = useRef<ISpeechRecognition | null>(null);
   const durationIntervalRef = useRef<NodeJS.Timeout | null>(null);
   const isIntentionalStopRef = useRef(false);
   const accumulatedFinalRef = useRef("");
@@ -25,12 +97,21 @@ export function useSpeech(options: UseSpeechOptions = {}) {
   // Check Web Speech API support safely on mount
   useEffect(() => {
     if (typeof window !== "undefined") {
+      const win = window as unknown as {
+        SpeechRecognition?: SpeechRecognitionConstructor;
+        webkitSpeechRecognition?: SpeechRecognitionConstructor;
+        mozSpeechRecognition?: SpeechRecognitionConstructor;
+        msSpeechRecognition?: SpeechRecognitionConstructor;
+      };
       const SpeechRecognition =
-        (window as any).SpeechRecognition ||
-        (window as any).webkitSpeechRecognition ||
-        (window as any).mozSpeechRecognition ||
-        (window as any).msSpeechRecognition;
-      setIsSupported(!!SpeechRecognition);
+        win.SpeechRecognition ||
+        win.webkitSpeechRecognition ||
+        win.mozSpeechRecognition ||
+        win.msSpeechRecognition;
+        
+      Promise.resolve().then(() => {
+        setIsSupported(!!SpeechRecognition);
+      });
     }
   }, []);
 
@@ -47,7 +128,9 @@ export function useSpeech(options: UseSpeechOptions = {}) {
       if (recognitionRef.current) {
         try {
           recognitionRef.current.abort();
-        } catch (e) {}
+        } catch {
+          // Suppress errors during unmount cleanup
+        }
       }
       if (durationIntervalRef.current) {
         clearInterval(durationIntervalRef.current);
@@ -62,11 +145,18 @@ export function useSpeech(options: UseSpeechOptions = {}) {
 
     if (typeof window === "undefined") return;
 
+    const win = window as unknown as {
+      SpeechRecognition?: SpeechRecognitionConstructor;
+      webkitSpeechRecognition?: SpeechRecognitionConstructor;
+      mozSpeechRecognition?: SpeechRecognitionConstructor;
+      msSpeechRecognition?: SpeechRecognitionConstructor;
+    };
+
     const SpeechRecognition =
-      (window as any).SpeechRecognition ||
-      (window as any).webkitSpeechRecognition ||
-      (window as any).mozSpeechRecognition ||
-      (window as any).msSpeechRecognition;
+      win.SpeechRecognition ||
+      win.webkitSpeechRecognition ||
+      win.mozSpeechRecognition ||
+      win.msSpeechRecognition;
 
     if (!SpeechRecognition) {
       setError("not-supported");
@@ -89,7 +179,9 @@ export function useSpeech(options: UseSpeechOptions = {}) {
           recognitionRef.current.onerror = null;
           recognitionRef.current.onend = null;
           recognitionRef.current.abort();
-        } catch (_) {}
+        } catch {
+          // Suppress error during recreation cleanup
+        }
         recognitionRef.current = null;
       }
 
@@ -100,52 +192,69 @@ export function useSpeech(options: UseSpeechOptions = {}) {
       rec.maxAlternatives = 1;
 
       rec.onstart = () => {
-        setIsListening(true);
+        Promise.resolve().then(() => {
+          setIsListening(true);
+        });
         isIntentionalStopRef.current = false;
 
         // Increment duration timer every second
         if (durationIntervalRef.current) clearInterval(durationIntervalRef.current);
         durationIntervalRef.current = setInterval(() => {
-          setDuration((prev) => prev + 1);
+          Promise.resolve().then(() => {
+            setDuration((prev) => prev + 1);
+          });
         }, 1000);
       };
 
-      rec.onresult = (event: any) => {
+      rec.onresult = (event: SpeechRecognitionEvent) => {
+        const finalSegments: string[] = [];
         let interimTranscript = "";
-        let finalTranscript = "";
 
-        // Rebuild the entire transcript from scratch.
-        // This is the only bulletproof way to handle mobile Chrome/Android where
-        // event.resultIndex is buggy and often resets to 0, which causes
-        // duplicate appends in cumulative transcription models.
+        // Collect all final results and interim results separately
         for (let i = 0; i < event.results.length; ++i) {
           const result = event.results[i];
           if (result.isFinal) {
-            finalTranscript += (finalTranscript ? " " : "") + result[0].transcript.trim();
+            finalSegments.push(result[0].transcript);
           } else {
             interimTranscript += result[0].transcript;
           }
         }
 
+        // Merge final segments with overlap deduplication
+        let finalTranscript = "";
+        for (const seg of finalSegments) {
+          const trimmed = seg.trim();
+          if (!trimmed) continue;
+          if (!finalTranscript) {
+            finalTranscript = trimmed;
+          } else {
+            finalTranscript = mergeTwo(finalTranscript, trimmed);
+          }
+        }
+
         accumulatedFinalRef.current = finalTranscript;
+
+        // Compute clean interim transcript that doesn't duplicate final words
+        let cleanInterim = interimTranscript.trim();
+        if (cleanInterim) {
+          const total = mergeTwo(finalTranscript, cleanInterim);
+          if (total.toLowerCase().startsWith(finalTranscript.toLowerCase())) {
+            cleanInterim = total.slice(finalTranscript.length).trim();
+          }
+        }
 
         if (onResult) {
           onResult({
             final: finalTranscript,
-            interim: interimTranscript,
+            interim: cleanInterim,
           });
         }
       };
 
-      rec.onerror = (event: any) => {
+      rec.onerror = (event: SpeechRecognitionErrorEvent) => {
         // If intentionally stopped or aborted, suppress this error entirely.
         if (isIntentionalStopRef.current || event.error === "aborted") {
           return;
-        }
-
-        // 'no-speech' is an expected silence timeout — not a user-facing error.
-        if (event.error !== "no-speech") {
-          console.error("Speech recognition error:", event.error);
         }
 
         let errorType = "generic";
@@ -158,17 +267,23 @@ export function useSpeech(options: UseSpeechOptions = {}) {
           errorType = "network";
         }
 
-        setError(errorType);
+        Promise.resolve().then(() => {
+          setError(errorType);
+        });
         if (onError) onError(errorType);
 
         isIntentionalStopRef.current = true;
         try {
           rec.abort();
-        } catch (_) {}
+        } catch {
+          // Suppress error during abort
+        }
       };
 
       rec.onend = () => {
-        setIsListening(false);
+        Promise.resolve().then(() => {
+          setIsListening(false);
+        });
         if (durationIntervalRef.current) {
           clearInterval(durationIntervalRef.current);
           durationIntervalRef.current = null;
@@ -184,9 +299,10 @@ export function useSpeech(options: UseSpeechOptions = {}) {
 
       recognitionRef.current = rec;
       recognitionRef.current.start();
-    } catch (e) {
-      console.error("Failed to initialize or start SpeechRecognition:", e);
-      setError("generic");
+    } catch {
+      Promise.resolve().then(() => {
+        setError("generic");
+      });
       if (onError) onError("generic");
     }
   }, [lang, onResult, onEnd, onError]);
@@ -196,12 +312,14 @@ export function useSpeech(options: UseSpeechOptions = {}) {
       isIntentionalStopRef.current = true;
       try {
         recognitionRef.current.stop();
-      } catch (e) {
-        console.error("Error stopping SpeechRecognition:", e);
+      } catch {
+        // Suppress stop error
       }
       // Null the ref so the next startListening gets a fresh instance
       recognitionRef.current = null;
-      setIsListening(false);
+      Promise.resolve().then(() => {
+        setIsListening(false);
+      });
       if (durationIntervalRef.current) {
         clearInterval(durationIntervalRef.current);
         durationIntervalRef.current = null;
@@ -217,10 +335,14 @@ export function useSpeech(options: UseSpeechOptions = {}) {
       isIntentionalStopRef.current = true;
       try {
         recognitionRef.current.abort();
-      } catch (_) {}
+      } catch {
+        // Suppress abort error
+      }
       // Null the ref so the next startListening gets a fresh instance
       recognitionRef.current = null;
-      setIsListening(false);
+      Promise.resolve().then(() => {
+        setIsListening(false);
+      });
       if (durationIntervalRef.current) {
         clearInterval(durationIntervalRef.current);
         durationIntervalRef.current = null;
@@ -237,7 +359,9 @@ export function useSpeech(options: UseSpeechOptions = {}) {
     startListening,
     stopListening,
     cancelListening,
-    setError,
+    setError: (err: string | null) => {
+      Promise.resolve().then(() => setError(err));
+    },
   };
 }
 

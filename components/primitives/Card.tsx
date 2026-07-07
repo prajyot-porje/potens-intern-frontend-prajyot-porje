@@ -2,7 +2,6 @@
 
 import React from "react";
 import { motion, HTMLMotionProps } from "framer-motion";
-import { useReducedMotion } from "../../hooks/useReducedMotion";
 import { cn } from "../../lib/utils";
 
 export interface CardProps extends HTMLMotionProps<"div"> {
@@ -12,7 +11,6 @@ export interface CardProps extends HTMLMotionProps<"div"> {
 
 export const Card = React.forwardRef<HTMLDivElement, CardProps>(
   ({ interactive = false, className, children, ...props }, ref) => {
-    const isReduced = useReducedMotion();
 
     const baseStyles = cn(
       "bg-surface rounded-lg border border-border p-space-4 text-text-primary",

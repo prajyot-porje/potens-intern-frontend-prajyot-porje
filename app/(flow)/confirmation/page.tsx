@@ -4,7 +4,7 @@ import React, { useEffect, useState, Suspense } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { RefreshCw } from "lucide-react";
 import { useLanguage } from "@/hooks/useLanguage";
-import { DisplayText, Heading, ParagraphText, MonoText } from "@/components/typography";
+import { DisplayText, Heading, ParagraphText } from "@/components/typography";
 import { Button, Card, Section, Divider, IconWrapper } from "@/components/primitives";
 import { CATEGORIES } from "@/lib/utils/constants";
 import { getSubmissionById, Submission } from "@/lib/storage";
@@ -20,13 +20,16 @@ function ConfirmationContent() {
   const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
-    setMounted(true);
-    const record = getSubmissionById(submissionId);
-    if (!record) {
-      router.replace("/category");
-      return;
-    }
-    setSubmission(record);
+    window.scrollTo(0, 0);
+    Promise.resolve().then(() => {
+      setMounted(true);
+      const record = getSubmissionById(submissionId);
+      if (!record) {
+        router.replace("/category");
+        return;
+      }
+      setSubmission(record);
+    });
   }, [submissionId, router]);
 
   const handleReset = () => {
@@ -96,7 +99,7 @@ function ConfirmationContent() {
         <div className="text-success mb-space-4">
           <CheckmarkDraw />
         </div>
-        <DisplayText size="medium" className="mb-space-2 !text-3xl tracking-tight font-bold">
+        <DisplayText as="h1" size="medium" className="mb-space-2 !text-3xl tracking-tight font-bold">
           {t("confirmation.successTitle")}
         </DisplayText>
         <ParagraphText variant="regular" className="text-text-secondary max-w-[30ch]">

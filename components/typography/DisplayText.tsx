@@ -4,12 +4,13 @@ import React from "react";
 import { useLanguage } from "../../hooks/useLanguage";
 import { cn } from "../../lib/utils";
 
-interface DisplayTextProps extends React.HTMLAttributes<HTMLSpanElement> {
+interface DisplayTextProps extends React.HTMLAttributes<HTMLElement> {
   size?: "medium" | "large";
+  as?: "h1" | "h2" | "h3" | "span" | "div";
   children: React.ReactNode;
 }
 
-export const DisplayText: React.FC<DisplayTextProps> = ({ size = "medium", className, children, style, ...props }) => {
+export const DisplayText: React.FC<DisplayTextProps> = ({ size = "medium", as: Tag = "span", className, children, style, ...props }) => {
   const { locale } = useLanguage();
   const isMarathi = locale === "mr";
 
@@ -43,17 +44,17 @@ export const DisplayText: React.FC<DisplayTextProps> = ({ size = "medium", class
       };
 
   return (
-    <span
+    <Tag
       className={cn(
         isMarathi ? "font-marathi font-bold" : "font-display font-bold",
         "text-text-primary tracking-tight transition-all duration-150 block",
         className
       )}
       style={fontStyle}
-      {...props}
+      {...(props as React.HTMLAttributes<HTMLElement>)}
     >
       {children}
-    </span>
+    </Tag>
   );
 };
 
