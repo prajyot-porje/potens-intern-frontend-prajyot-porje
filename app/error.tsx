@@ -22,7 +22,7 @@ export default function GlobalError({ error, reset }: ErrorProps) {
       window.localStorage.removeItem("nagrik_draft_category");
       window.localStorage.removeItem("nagrik_draft_description");
       window.localStorage.removeItem("nagrik_draft_photo");
-    } catch (e) {}
+    } catch {}
     reset();
   };
 

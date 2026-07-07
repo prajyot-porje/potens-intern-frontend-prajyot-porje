@@ -2,7 +2,6 @@
 
 import React from "react";
 import { motion, HTMLMotionProps } from "framer-motion";
-import { useReducedMotion } from "../../hooks/useReducedMotion";
 import { cn } from "../../lib/utils";
 
 export interface ButtonProps extends HTMLMotionProps<"button"> {
@@ -12,12 +11,12 @@ export interface ButtonProps extends HTMLMotionProps<"button"> {
 
 export const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
   ({ variant = "primary", fullWidth = false, className, children, ...props }, ref) => {
-    const isReduced = useReducedMotion();
 
     const baseStyles = cn(
-      "inline-flex items-center justify-center rounded-md font-medium text-uiLabel cursor-pointer transition-colors duration-150 select-none",
+      "inline-flex items-center justify-center rounded-md font-medium text-uiLabel cursor-pointer select-none",
+      "transition-[color,background-color,border-color,transform] duration-150 ease-out",
       "min-h-[48px] min-w-[48px] px-space-6 py-space-3", // Min touch target: 48x48px
-      "custom-focus",
+      "custom-focus motion-safe:active:scale-[0.97]",
       fullWidth ? "w-full" : "w-auto"
     );
 
@@ -55,14 +54,10 @@ export const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
       ),
     };
 
-    // Minor down-scale on click to mimic tactile switch feedback
-    const activeAnimation = isReduced ? {} : { whileTap: { scale: 0.98 } };
-
     return (
       <motion.button
         ref={ref}
         className={cn(baseStyles, variantStyles[variant], className)}
-        {...activeAnimation}
         {...props}
       >
         {children}

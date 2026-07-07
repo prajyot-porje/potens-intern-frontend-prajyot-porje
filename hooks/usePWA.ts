@@ -34,11 +34,15 @@ export function usePWA() {
       _initialized = true;
     }
 
-    // Sync current state immediately (in case init already ran)
-    setState(getState());
+    Promise.resolve().then(() => {
+      // Sync current state immediately (in case init already ran)
+      setState(getState());
+    });
 
     // Subscribe to future changes
-    const unsubscribe = subscribe(setState);
+    const unsubscribe = subscribe((newState) => {
+      Promise.resolve().then(() => setState(newState));
+    });
     return unsubscribe;
   }, []);
 

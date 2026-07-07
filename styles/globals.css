@@ -115,7 +115,7 @@ body {
   font-family: var(--font-body);
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
-  transition: background-color 300ms cubic-bezier(0.22, 1, 0.36, 1), color 300ms cubic-bezier(0.22, 1, 0.36, 1);
+  transition: background-color 150ms cubic-bezier(0.22, 1, 0.36, 1), color 150ms cubic-bezier(0.22, 1, 0.36, 1);
 }
 
 /* Custom Accessibility Outline Rules */
@@ -127,6 +127,15 @@ body {
 /* Disable default blue outlines across all standard controls */
 input:focus, textarea:focus, select:focus, button:focus {
   outline: none;
+}
+
+/* Custom focus helper with smooth shadow transitions */
+.custom-focus {
+  transition: box-shadow 150ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+.custom-focus:focus-visible {
+  outline: none;
+  box-shadow: var(--focus-ring-shadow);
 }
 
 /* Dynamic text line length limits to avoid visual strain */
@@ -158,6 +167,38 @@ p, span, li {
   .animate-slide-down,
   .animate-slide-up {
     animation: none;
+  }
+}
+
+/* ── Gated Hover Animations (only for hover-capable fine pointer devices) ── */
+@media (hover: hover) and (pointer: fine) {
+  .interactive-card {
+    transition: transform 150ms cubic-bezier(0.22, 1, 0.36, 1),
+                background-color 150ms cubic-bezier(0.22, 1, 0.36, 1),
+                border-color 150ms cubic-bezier(0.22, 1, 0.36, 1),
+                box-shadow 150ms cubic-bezier(0.22, 1, 0.36, 1);
+  }
+  .interactive-card:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.02);
+  }
+  .interactive-card:hover:not([aria-checked="true"]) {
+    background-color: var(--surface-variant);
+    border-color: var(--border-strong);
+  }
+  .interactive-card:hover[aria-checked="true"] {
+    transform: translateY(-1px);
+  }
+
+  /* Button icon translations */
+  .btn-hover-group:hover .btn-hover-arrow {
+    transform: translateX(4px);
+  }
+  .btn-hover-group:hover .btn-hover-rotate {
+    transform: rotate(45deg);
+  }
+  .btn-hover-group:hover .btn-hover-scale {
+    transform: scale(1.1);
   }
 }
 

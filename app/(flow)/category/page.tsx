@@ -11,7 +11,10 @@ import { CATEGORY_LIST } from "@/lib/utils/constants";
 import { ReducedMotionWrapper } from "@/components/motion";
 import { cn } from "@/lib/utils";
 
-const iconMap: Record<string, React.ComponentType<any>> = {
+const iconMap: Record<
+  string,
+  React.ComponentType<React.SVGProps<SVGSVGElement> & { strokeWidth?: number }>
+> = {
   Road,
   Trash2,
   Droplet,
@@ -19,6 +22,39 @@ const iconMap: Record<string, React.ComponentType<any>> = {
   ShieldAlert,
   HelpCircle,
 };
+
+function CategorySkeleton() {
+  return (
+    <div className="flex flex-col flex-1">
+      {/* Title & Description Skeleton */}
+      <Section spacing="space-4" className="text-left animate-pulse">
+        <div className="h-10 w-48 bg-surface-variant rounded mb-space-2" />
+        <div className="h-5 w-64 bg-surface-variant rounded" />
+      </Section>
+
+      {/* Grid Skeleton */}
+      <Section spacing="space-6" className="flex-1 flex flex-col justify-center animate-pulse">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-space-4 my-auto">
+          {Array.from({ length: 6 }).map((__, i) => (
+            <div key={i} className="flex items-center gap-space-4 border border-border bg-surface p-space-4 rounded-lg">
+              <div className="w-12 h-12 rounded-md bg-surface-variant shrink-0" />
+              <div className="flex flex-col gap-space-2 flex-1">
+                <div className="h-4 w-24 bg-surface-variant rounded" />
+                <div className="h-3 w-full bg-surface-variant rounded" />
+                <div className="h-3 w-5/6 bg-surface-variant rounded" />
+              </div>
+            </div>
+          ))}
+        </div>
+      </Section>
+
+      {/* Button Skeleton */}
+      <div className="pt-space-6 pb-space-2 mt-auto border-t border-border/50 animate-pulse">
+        <div className="w-full h-12 bg-surface-variant rounded" />
+      </div>
+    </div>
+  );
+}
 
 function CategoryContent() {
   const router = useRouter();
@@ -32,16 +68,18 @@ function CategoryContent() {
   // Sync category from URL parameter or localStorage draft on mount/search parameter change
   useEffect(() => {
     const urlCategory = searchParams.get("category");
-    if (urlCategory) {
-      setSelectedCategory(urlCategory);
-      setDraftCategory(urlCategory);
-    } else if (draftCategory) {
-      setSelectedCategory(draftCategory);
-      // Sync URL shallowly with draft category
-      const params = new URLSearchParams(searchParams.toString());
-      params.set("category", draftCategory);
-      router.replace(`/category?${params.toString()}`, { scroll: false });
-    }
+    Promise.resolve().then(() => {
+      if (urlCategory) {
+        setSelectedCategory(urlCategory);
+        setDraftCategory(urlCategory);
+      } else if (draftCategory) {
+        setSelectedCategory(draftCategory);
+        // Sync URL shallowly with draft category
+        const params = new URLSearchParams(searchParams.toString());
+        params.set("category", draftCategory);
+        router.replace(`/category?${params.toString()}`, { scroll: false });
+      }
+    });
   }, [searchParams, draftCategory, setDraftCategory, router]);
 
   const handleSelectCategory = (key: string) => {
@@ -126,11 +164,13 @@ function CategoryContent() {
     cards[nextIndex]?.focus();
   };
 
+  const dirParam = searchParams.get("dir") === "backward" ? "backward" : "forward";
+
   return (
-    <ReducedMotionWrapper variantType="slideHorizontal" direction="forward" className="flex flex-col flex-1">
+    <ReducedMotionWrapper variantType="slideHorizontal" direction={dirParam} className="flex flex-col flex-1">
       {/* Title & Description */}
       <Section spacing="space-4" className="text-left">
-        <DisplayText size="medium" className="mb-space-2 !text-3xl md:!text-4xl tracking-tight font-bold">
+        <DisplayText as="h1" size="medium" className="mb-space-2 !text-3xl md:!text-4xl tracking-tight font-bold">
           {t("category.title")}
         </DisplayText>
         <ParagraphText variant="large" className="max-w-[50ch] !text-text-secondary">
@@ -163,11 +203,7 @@ function CategoryContent() {
                 role="radio"
                 tabIndex={tabIndex}
                 className={cn(
-                  "group flex items-start gap-space-4 border text-left p-space-4 min-h-[96px] cursor-pointer",
-                  "transition-all duration-150 ease-[cubic-bezier(0.22,1,0.36,1)]",
-                  // Hover/Focus: subtle lift and bg shift
-                  "hover:bg-surface-variant hover:border-border-strong motion-safe:hover:-translate-y-[0.5px]",
-                  "focus-visible:bg-surface-variant focus-visible:border-border-strong motion-safe:focus-visible:-translate-y-[0.5px]",
+                  "group flex items-center gap-space-4 text-left p-space-4",
                   isSelected
                     ? "border-text-primary bg-surface-variant ring-1 ring-text-primary/10"
                     : "border-border bg-surface"
@@ -176,7 +212,7 @@ function CategoryContent() {
                 {/* Icon wrapper - inverts when card is selected */}
                 <div className={cn(
                   "flex items-center justify-center w-12 h-12 rounded-md shrink-0 border",
-                  "transition-all duration-150 ease-[cubic-bezier(0.22,1,0.36,1)]",
+                  "transition-colors duration-150 ease-[cubic-bezier(0.22,1,0.36,1)]",
                   isSelected
                     ? "bg-text-primary border-text-primary text-surface"
                     : "bg-surface-variant border-border text-text-secondary group-hover:text-text-primary group-hover:border-border-strong group-focus-visible:text-text-primary group-focus-visible:border-border-strong"
@@ -218,12 +254,12 @@ function CategoryContent() {
           fullWidth
           disabled={!selectedCategory}
           onClick={handleContinue}
-          className="w-full flex items-center justify-center gap-space-2 disabled:opacity-50 disabled:cursor-not-allowed disabled:pointer-events-none group transition-all duration-200 ease-[cubic-bezier(0.22,1,0.36,1)]"
+          className="w-full flex items-center justify-center gap-space-2 disabled:opacity-50 disabled:cursor-not-allowed disabled:pointer-events-none group btn-hover-group"
         >
           <span>{t("common.continue")}</span>
           <IconWrapper 
             icon={ArrowRight} 
-            className="h-4 w-4 transition-transform duration-200 ease-[cubic-bezier(0.22,1,0.36,1)] motion-safe:group-hover:translate-x-1" 
+            className="h-4 w-4 transition-transform duration-150 ease-out btn-hover-arrow" 
           />
         </Button>
       </div>
@@ -233,13 +269,7 @@ function CategoryContent() {
 
 export default function CategoryPage() {
   return (
-    <Suspense fallback={
-      <div className="flex flex-col flex-1 items-center justify-center py-space-12">
-        <ParagraphText variant="regular" className="animate-pulse">
-          Loading categories...
-        </ParagraphText>
-      </div>
-    }>
+    <Suspense fallback={<CategorySkeleton />}>
       <CategoryContent />
     </Suspense>
   );

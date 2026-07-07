@@ -3,6 +3,7 @@
 import React, { useEffect, useState } from "react";
 import { usePathname, useRouter } from "next/navigation";
 import { Sun, Moon, Languages, Activity, ArrowLeft } from "lucide-react";
+import { motion, AnimatePresence } from "framer-motion";
 import { useTheme } from "../../hooks/useTheme";
 import { useLanguage } from "../../hooks/useLanguage";
 import { Heading, ParagraphText, MonoText } from "../../components/typography";
@@ -17,7 +18,9 @@ export default function FlowLayout({ children }: { children: React.ReactNode }) 
   const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
-    setMounted(true);
+    Promise.resolve().then(() => {
+      setMounted(true);
+    });
   }, []);
 
   const cycleLanguage = () => {
@@ -26,9 +29,15 @@ export default function FlowLayout({ children }: { children: React.ReactNode }) 
 
   const handleBack = () => {
     if (pathname === "/confirmation") {
-      router.push("/category");
+      router.push("/category?dir=backward");
     } else {
-      router.back();
+      if (typeof window !== "undefined") {
+        const params = new URLSearchParams(window.location.search);
+        const cat = params.get("category") || "";
+        router.push(`/category?category=${cat}&dir=backward`);
+      } else {
+        router.push("/category?dir=backward");
+      }
     }
   };
 
@@ -43,39 +52,64 @@ export default function FlowLayout({ children }: { children: React.ReactNode }) 
       {/* Header section with theme/lang controls */}
       <header className="flex items-center justify-between border-b border-border pb-space-4 h-16 min-h-16 relative z-10">
         <div className="flex items-center gap-space-2 min-w-[120px]">
-          {mounted && showBackButton ? (
-            <Button
-              variant="secondary"
-              className="!min-h-[40px] !h-[40px] !w-[40px] !p-0 rounded-md border border-border-strong hover:bg-surface-variant transition-transform active:scale-95 flex items-center justify-center"
-              onClick={handleBack}
-              aria-label={t("common.back")}
-            >
-              <IconWrapper icon={ArrowLeft} className="h-4 w-4" />
-            </Button>
-          ) : (
-            <div className="flex items-center gap-space-2">
-              <IconWrapper icon={Activity} className="text-text-primary" />
-              <Heading level={2} className="!text-lg">
-                {t("common.appTitle")}
-              </Heading>
-            </div>
-          )}
+          <AnimatePresence mode="wait">
+            {mounted && showBackButton ? (
+              <motion.div
+                key="back"
+                initial={{ opacity: 0, scale: 0.95 }}
+                animate={{ opacity: 1, scale: 1 }}
+                exit={{ opacity: 0, scale: 0.95 }}
+                transition={{ duration: 0.15, ease: "easeOut" }}
+              >
+                <Button
+                  variant="secondary"
+                  className="!min-h-[44px] !h-[44px] !w-[44px] !p-0 rounded-md border border-border-strong hover:bg-surface-variant transition-transform active:scale-95 flex items-center justify-center"
+                  onClick={handleBack}
+                  aria-label={t("common.back")}
+                >
+                  <IconWrapper icon={ArrowLeft} className="h-4 w-4" />
+                </Button>
+              </motion.div>
+            ) : (
+              <motion.div
+                key="logo"
+                initial={{ opacity: 0, scale: 0.95 }}
+                animate={{ opacity: 1, scale: 1 }}
+                exit={{ opacity: 0, scale: 0.95 }}
+                transition={{ duration: 0.15, ease: "easeOut" }}
+                className="flex items-center gap-space-2"
+              >
+                <IconWrapper icon={Activity} className="text-text-primary" />
+                <Heading level={2} className="!text-lg">
+                  {t("common.appTitle")}
+                </Heading>
+              </motion.div>
+            )}
+          </AnimatePresence>
         </div>
         
         {/* Contextual screen title in center of header */}
-        {mounted && showBackButton && (
-          <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 hidden xs:block">
-            <Heading level={2} className="!text-base whitespace-nowrap">
-              {pathname === "/details" ? t("form.title") : t("confirmation.successTitle")}
-            </Heading>
-          </div>
-        )}
+        <AnimatePresence>
+          {mounted && showBackButton && (
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              transition={{ duration: 0.15 }}
+              className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 hidden xs:block"
+            >
+              <Heading level={2} className="!text-base whitespace-nowrap">
+                {pathname === "/details" ? t("form.title") : t("confirmation.successTitle")}
+              </Heading>
+            </motion.div>
+          )}
+        </AnimatePresence>
 
         <div className="flex gap-space-2 min-w-[120px] justify-end">
           {/* Language Toggle */}
           <Button
             variant="secondary"
-            className="!min-h-[40px] !h-[40px] !px-space-3 text-xs flex items-center gap-space-1"
+            className="!min-h-[44px] !h-[44px] !px-space-3 text-xs flex items-center gap-space-1"
             onClick={cycleLanguage}
             aria-label="Toggle language"
           >
@@ -86,14 +120,25 @@ export default function FlowLayout({ children }: { children: React.ReactNode }) 
           {/* Theme Cycle Toggle */}
           <Button
             variant="secondary"
-            className="!min-h-[40px] !h-[40px] !w-[40px] !p-0 flex items-center justify-center"
+            className="!min-h-[44px] !h-[44px] !w-[44px] !p-0 flex items-center justify-center overflow-hidden"
             onClick={toggleTheme}
             aria-label="Toggle theme"
           >
-            <IconWrapper
-              icon={mounted && resolvedTheme === "light" ? Moon : Sun}
-              className="h-4 w-4"
-            />
+            <AnimatePresence mode="wait" initial={false}>
+              <motion.div
+                key={mounted && resolvedTheme === "light" ? "light" : "dark"}
+                initial={{ rotate: -45, opacity: 0 }}
+                animate={{ rotate: 0, opacity: 1 }}
+                exit={{ rotate: 45, opacity: 0 }}
+                transition={{ duration: 0.15, ease: "easeOut" }}
+                className="flex items-center justify-center"
+              >
+                <IconWrapper
+                  icon={mounted && resolvedTheme === "light" ? Moon : Sun}
+                  className="h-4 w-4"
+                />
+              </motion.div>
+            </AnimatePresence>
           </Button>
         </div>
       </header>

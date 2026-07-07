@@ -25,7 +25,7 @@ export function useLocalStorage<T>(key: string, initialValue: T) {
       console.error(`Error reading localStorage key "${key}", clearing corrupted data:`, error);
       try {
         window.localStorage.removeItem(key);
-      } catch (e) {}
+      } catch {}
       Promise.resolve().then(() => {
         setIsMounted(true);
       });

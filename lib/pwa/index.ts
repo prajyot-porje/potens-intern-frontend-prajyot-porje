@@ -91,11 +91,7 @@ export function registerServiceWorker(): void {
   if (process.env.NODE_ENV === "development") {
     navigator.serviceWorker.getRegistrations().then((registrations) => {
       for (const registration of registrations) {
-        registration.unregister().then((success) => {
-          if (success) {
-            console.log("[PWA] Unregistered active service worker for development mode.");
-          }
-        });
+        registration.unregister().catch(() => {});
       }
     });
     return;

@@ -21,9 +21,13 @@ export function OfflineBanner() {
   useEffect(() => {
     let timer: ReturnType<typeof setTimeout>;
     if (isOffline) {
-      timer = setTimeout(() => setVisible(true), 300);
+      timer = setTimeout(() => {
+        Promise.resolve().then(() => setVisible(true));
+      }, 300);
     } else {
-      setVisible(false);
+      Promise.resolve().then(() => {
+        setVisible(false);
+      });
     }
     return () => clearTimeout(timer);
   }, [isOffline]);
