@@ -15,25 +15,25 @@ export const ParagraphText: React.FC<ParagraphTextProps> = ({ variant = "regular
 
   const paragraphTokens = {
     large: {
-      enSize: "1.00rem", // 16px
+      enSize: "var(--body-large-size, 1.00rem)", // 16px on mobile
       enLineHeight: "1.50",
       enLetterSpacing: "0.00em",
       weightClass: "font-normal",
     },
     regular: {
-      enSize: "0.875rem", // 14px
+      enSize: "var(--body-regular-size, 0.875rem)", // 14px on mobile
       enLineHeight: "1.50",
       enLetterSpacing: "0.00em",
       weightClass: "font-normal",
     },
     uiLabel: {
-      enSize: "0.875rem", // 14px
+      enSize: "var(--ui-label-size, 0.875rem)", // 14px on mobile
       enLineHeight: "1.30",
       enLetterSpacing: "0.01em",
       weightClass: "font-medium",
     },
     caption: {
-      enSize: "0.75rem", // 12px
+      enSize: "var(--caption-size, 0.75rem)", // 12px on mobile
       enLineHeight: "1.40",
       enLetterSpacing: "0.01em",
       weightClass: "font-normal",

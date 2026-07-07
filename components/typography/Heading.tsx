@@ -18,37 +18,37 @@ export const Heading: React.FC<HeadingProps> = ({ level, className, children, st
   // Design Tokens mappings
   const headingTokens = {
     1: {
-      enSize: "1.50rem", // 24px
+      enSize: "var(--heading-1-size, 1.50rem)", // 24px on mobile
       enLineHeight: "1.20",
       enLetterSpacing: "-0.01em",
       weightClass: "font-semibold",
     },
     2: {
-      enSize: "1.25rem", // 20px
+      enSize: "var(--heading-2-size, 1.25rem)", // 20px on mobile
       enLineHeight: "1.25",
       enLetterSpacing: "-0.005em",
       weightClass: "font-semibold",
     },
     3: {
-      enSize: "1.125rem",
+      enSize: "var(--heading-3-size, 1.125rem)",
       enLineHeight: "1.30",
       enLetterSpacing: "0em",
       weightClass: "font-medium",
     },
     4: {
-      enSize: "1.00rem",
+      enSize: "var(--heading-4-size, 1.00rem)",
       enLineHeight: "1.40",
       enLetterSpacing: "0em",
       weightClass: "font-medium",
     },
     5: {
-      enSize: "0.875rem",
+      enSize: "var(--heading-5-size, 0.875rem)",
       enLineHeight: "1.40",
       enLetterSpacing: "0em",
       weightClass: "font-medium",
     },
     6: {
-      enSize: "0.75rem",
+      enSize: "var(--heading-6-size, 0.75rem)",
       enLineHeight: "1.40",
       enLetterSpacing: "0em",
       weightClass: "font-medium",

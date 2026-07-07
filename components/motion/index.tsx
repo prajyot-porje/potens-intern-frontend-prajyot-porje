@@ -4,6 +4,7 @@ import React from "react";
 import { motion, AnimatePresence, HTMLMotionProps } from "framer-motion";
 import { useReducedMotion } from "../../hooks/useReducedMotion";
 import { motion as motionTokens } from "../../design/motion";
+import { cn } from "../../lib/utils";
 
 // Re-export AnimatePresence wrapper for cleaner imports
 export const AnimatePresenceWrapper = AnimatePresence;
@@ -177,7 +178,11 @@ export const ReducedMotionWrapper: React.FC<ReducedMotionWrapperProps> = ({
  * Animated checkmark SVG outline draws itself via stroke-dashoffset.
  * Fallbacks to standard fast fade if reduced motion is preferred.
  */
-export const CheckmarkDraw: React.FC = () => {
+interface CheckmarkDrawProps {
+  className?: string;
+}
+
+export const CheckmarkDraw: React.FC<CheckmarkDrawProps> = ({ className }) => {
   const isReduced = useReducedMotion();
 
   const circleVariants = {
@@ -209,7 +214,7 @@ export const CheckmarkDraw: React.FC = () => {
     <svg
       xmlns="http://www.w3.org/2000/svg"
       viewBox="0 0 52 52"
-      className="w-16 h-16 text-success shrink-0"
+      className={cn("text-success shrink-0", className || "w-16 h-16")}
     >
       <motion.circle
         cx="26"

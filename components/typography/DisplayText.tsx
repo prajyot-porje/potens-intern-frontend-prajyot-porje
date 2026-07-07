@@ -16,12 +16,12 @@ export const DisplayText: React.FC<DisplayTextProps> = ({ size = "medium", as: T
 
   const displayTokens = {
     large: {
-      enSize: "3.00rem", // 48px
+      enSize: "var(--display-large-size, 3.00rem)", // 48px on mobile
       enLineHeight: "1.10",
       enLetterSpacing: "-0.02em",
     },
     medium: {
-      enSize: "2.25rem", // 36px
+      enSize: "var(--display-medium-size, 2.25rem)", // 36px on mobile
       enLineHeight: "1.15",
       enLetterSpacing: "-0.015em",
     },

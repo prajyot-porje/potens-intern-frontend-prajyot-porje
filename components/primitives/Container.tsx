@@ -9,7 +9,7 @@ export const Container: React.FC<ContainerProps> = ({ className, children, ...pr
   return (
     <div
       className={cn(
-        "w-full max-w-120 mx-auto px-space-4 md:px-space-6 flex flex-col flex-1",
+        "w-full max-w-120 sm:max-w-[640px] md:max-w-[720px] mx-auto px-space-4 md:px-space-6 flex flex-col flex-1",
         className
       )}
       {...props}
