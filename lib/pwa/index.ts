@@ -86,6 +86,21 @@ export function registerServiceWorker(): void {
   if (typeof window === "undefined") return;
   if (!("serviceWorker" in navigator)) return;
 
+  // Bypass Service Worker in development mode to avoid breaking HMR and causing loop reloads.
+  // We also actively unregister any existing service worker from previous runs/builds.
+  if (process.env.NODE_ENV === "development") {
+    navigator.serviceWorker.getRegistrations().then((registrations) => {
+      for (const registration of registrations) {
+        registration.unregister().then((success) => {
+          if (success) {
+            console.log("[PWA] Unregistered active service worker for development mode.");
+          }
+        });
+      }
+    });
+    return;
+  }
+
   window.addEventListener("load", () => {
     navigator.serviceWorker
       .register("/sw.js", { scope: "/" })

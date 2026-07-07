@@ -75,101 +75,116 @@ export function useSpeech(options: UseSpeechOptions = {}) {
     }
 
     try {
-      if (!recognitionRef.current) {
-        const rec = new SpeechRecognition();
-        rec.continuous = true;
-        rec.interimResults = true;
-        rec.lang = lang;
-
-        rec.onstart = () => {
-          setIsListening(true);
-          isIntentionalStopRef.current = false;
-          
-          // Increment duration timer every second
-          if (durationIntervalRef.current) clearInterval(durationIntervalRef.current);
-          durationIntervalRef.current = setInterval(() => {
-            setDuration((prev) => prev + 1);
-          }, 1000);
-        };
-
-        rec.onresult = (event: any) => {
-          let interimTranscript = "";
-          let finalTranscript = "";
-
-          for (let i = event.resultIndex; i < event.results.length; ++i) {
-            const result = event.results[i];
-            if (result.isFinal) {
-              finalTranscript += result[0].transcript;
-            } else {
-              interimTranscript += result[0].transcript;
-            }
-          }
-
-          if (finalTranscript) {
-            accumulatedFinalRef.current += (accumulatedFinalRef.current ? " " : "") + finalTranscript;
-          }
-
-          if (onResult) {
-            onResult({
-              final: accumulatedFinalRef.current,
-              interim: interimTranscript,
-            });
-          }
-        };
-
-        rec.onerror = (event: any) => {
-          // If the error is 'aborted' or we intentionally stopped/aborted the session,
-          // do not treat it as a failure and suppress console.error.
-          if (isIntentionalStopRef.current || event.error === "aborted") {
-            return;
-          }
-
-          // Do not log 'no-speech' as a console.error since it is an expected silence timeout.
-          if (event.error !== "no-speech") {
-            console.error("Speech recognition error:", event.error);
-          }
-          
-          let errorType = "generic";
-          
-          // Map browser SpeechRecognition error types to friendly, localized strings
-          if (event.error === "not-allowed" || event.error === "permission-denied") {
-            errorType = "permission-denied";
-          } else if (event.error === "no-speech") {
-            errorType = "no-speech";
-          } else if (event.error === "network") {
-            errorType = "network";
-          }
-
-          setError(errorType);
-          if (onError) onError(errorType);
-          
-          // Reset states immediately on error
-          isIntentionalStopRef.current = true;
-          try {
-            rec.abort();
-          } catch (e) {}
-        };
-
-        rec.onend = () => {
-          setIsListening(false);
-          if (durationIntervalRef.current) {
-            clearInterval(durationIntervalRef.current);
-            durationIntervalRef.current = null;
-          }
-
-          // If the browser ends the session automatically (e.g. silence detection / inactivity)
-          if (!isIntentionalStopRef.current) {
-            if (onEnd) {
-              onEnd(accumulatedFinalRef.current);
-            }
-          }
-        };
-
-        recognitionRef.current = rec;
-      } else {
-        recognitionRef.current.lang = lang;
+      // Always destroy and recreate the recognition instance.
+      //
+      // Android Chrome re-fires stale partial results from the previous session
+      // when the same instance is restarted — causing words to appear multiple
+      // times (e.g. "check check check the testing"). Creating a fresh instance
+      // for every recording session is the only reliable fix across all mobile
+      // browsers.
+      if (recognitionRef.current) {
+        try {
+          recognitionRef.current.onstart = null;
+          recognitionRef.current.onresult = null;
+          recognitionRef.current.onerror = null;
+          recognitionRef.current.onend = null;
+          recognitionRef.current.abort();
+        } catch (_) {}
+        recognitionRef.current = null;
       }
 
+      const rec = new SpeechRecognition();
+      rec.continuous = true;
+      rec.interimResults = true;
+      rec.lang = lang;
+      rec.maxAlternatives = 1;
+
+      rec.onstart = () => {
+        setIsListening(true);
+        isIntentionalStopRef.current = false;
+
+        // Increment duration timer every second
+        if (durationIntervalRef.current) clearInterval(durationIntervalRef.current);
+        durationIntervalRef.current = setInterval(() => {
+          setDuration((prev) => prev + 1);
+        }, 1000);
+      };
+
+      rec.onresult = (event: any) => {
+        let interimTranscript = "";
+        let finalTranscript = "";
+
+        // Only process NEW results since the last event (event.resultIndex to end).
+        // This prevents re-reading already-processed results that Chrome sometimes
+        // re-includes in the results list on mobile.
+        for (let i = event.resultIndex; i < event.results.length; ++i) {
+          const result = event.results[i];
+          if (result.isFinal) {
+            finalTranscript += result[0].transcript;
+          } else {
+            interimTranscript += result[0].transcript;
+          }
+        }
+
+        if (finalTranscript) {
+          accumulatedFinalRef.current +=
+            (accumulatedFinalRef.current ? " " : "") + finalTranscript.trim();
+        }
+
+        if (onResult) {
+          onResult({
+            final: accumulatedFinalRef.current,
+            interim: interimTranscript,
+          });
+        }
+      };
+
+      rec.onerror = (event: any) => {
+        // If intentionally stopped or aborted, suppress this error entirely.
+        if (isIntentionalStopRef.current || event.error === "aborted") {
+          return;
+        }
+
+        // 'no-speech' is an expected silence timeout — not a user-facing error.
+        if (event.error !== "no-speech") {
+          console.error("Speech recognition error:", event.error);
+        }
+
+        let errorType = "generic";
+
+        if (event.error === "not-allowed" || event.error === "permission-denied") {
+          errorType = "permission-denied";
+        } else if (event.error === "no-speech") {
+          errorType = "no-speech";
+        } else if (event.error === "network") {
+          errorType = "network";
+        }
+
+        setError(errorType);
+        if (onError) onError(errorType);
+
+        isIntentionalStopRef.current = true;
+        try {
+          rec.abort();
+        } catch (_) {}
+      };
+
+      rec.onend = () => {
+        setIsListening(false);
+        if (durationIntervalRef.current) {
+          clearInterval(durationIntervalRef.current);
+          durationIntervalRef.current = null;
+        }
+
+        // Browser ended session automatically (silence detection / inactivity)
+        if (!isIntentionalStopRef.current) {
+          if (onEnd) {
+            onEnd(accumulatedFinalRef.current);
+          }
+        }
+      };
+
+      recognitionRef.current = rec;
       recognitionRef.current.start();
     } catch (e) {
       console.error("Failed to initialize or start SpeechRecognition:", e);
@@ -186,6 +201,8 @@ export function useSpeech(options: UseSpeechOptions = {}) {
       } catch (e) {
         console.error("Error stopping SpeechRecognition:", e);
       }
+      // Null the ref so the next startListening gets a fresh instance
+      recognitionRef.current = null;
       setIsListening(false);
       if (durationIntervalRef.current) {
         clearInterval(durationIntervalRef.current);
@@ -202,9 +219,9 @@ export function useSpeech(options: UseSpeechOptions = {}) {
       isIntentionalStopRef.current = true;
       try {
         recognitionRef.current.abort();
-      } catch (e) {
-        console.error("Error aborting SpeechRecognition:", e);
-      }
+      } catch (_) {}
+      // Null the ref so the next startListening gets a fresh instance
+      recognitionRef.current = null;
       setIsListening(false);
       if (durationIntervalRef.current) {
         clearInterval(durationIntervalRef.current);
