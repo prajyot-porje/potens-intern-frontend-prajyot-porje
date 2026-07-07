@@ -78,6 +78,16 @@ self.addEventListener("fetch", (event) => {
     return;
   }
 
+  // Bypass Next.js HMR, hot reloading, WebSockets, Fast Refresh, and dev-mode static files
+  if (
+    url.pathname.includes("webpack-hmr") ||
+    url.pathname.includes("fast-refresh") ||
+    url.pathname.startsWith("/_next/static/webpack/") ||
+    url.pathname.startsWith("/_next/static/development/")
+  ) {
+    return;
+  }
+
   // ── Strategy routing ────────────────────────────────────────────────────
 
   // 1. Cache-First: hashed Next.js static assets (immutable)
