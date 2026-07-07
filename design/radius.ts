@@ -1,0 +1,8 @@
+export const radius = {
+  sm: "8px",
+  md: "12px",
+  lg: "20px",
+  full: "9999px",
+} as const;
+
+export type RadiusToken = keyof typeof radius;

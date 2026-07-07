@@ -1,7 +1,10 @@
 import type { Metadata } from "next";
 import { Instrument_Sans, Hind, Geist_Mono } from "next/font/google";
 import localFont from "next/font/local";
-import "./globals.css";
+import "../styles/globals.css";
+import { LanguageProvider } from "../lib/i18n";
+import { ThemeProvider } from "../lib/theme";
+import { PageWrapper, Container } from "../components/primitives";
 
 const grift = localFont({
   src: [
@@ -40,6 +43,7 @@ const geistMono = Geist_Mono({
 export const metadata: Metadata = {
   title: "Nagrik",
   description: "Ultra-premium, neutral-only civic reporting PWA",
+  manifest: "/manifest.json", // Reference manifest for future PWA shell
 };
 
 export default function RootLayout({
@@ -51,9 +55,19 @@ export default function RootLayout({
     <html
       lang="en"
       className={`${grift.variable} ${instrumentSans.variable} ${hind.variable} ${geistMono.variable} h-full antialiased`}
+      suppressHydrationWarning
     >
-      <body className="min-h-full flex flex-col">{children}</body>
+      <body className="min-h-full flex flex-col bg-bg transition-colors duration-300">
+        <LanguageProvider>
+          <ThemeProvider>
+            <PageWrapper>
+              <Container>
+                {children}
+              </Container>
+            </PageWrapper>
+          </ThemeProvider>
+        </LanguageProvider>
+      </body>
     </html>
   );
 }
-
