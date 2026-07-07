@@ -181,7 +181,7 @@ function CategoryContent() {
       {/* Grid of Categories */}
       <Section spacing="space-6" className="flex-1 flex flex-col justify-center">
         <div 
-          className="grid grid-cols-1 sm:grid-cols-2 gap-space-4 my-auto"
+          className="grid grid-cols-1 sm:grid-cols-2 gap-space-4 sm:gap-space-6 my-auto"
           role="radiogroup"
           aria-label={t("category.title")}
           onKeyDown={handleGridKeyDown}
@@ -203,7 +203,7 @@ function CategoryContent() {
                 role="radio"
                 tabIndex={tabIndex}
                 className={cn(
-                  "group flex items-center gap-space-4 text-left p-space-4",
+                  "group flex items-center gap-space-4 sm:gap-space-6 text-left p-space-4 sm:p-space-6",
                   isSelected
                     ? "border-text-primary bg-surface-variant ring-1 ring-text-primary/10"
                     : "border-border bg-surface"
@@ -211,7 +211,7 @@ function CategoryContent() {
               >
                 {/* Icon wrapper - inverts when card is selected */}
                 <div className={cn(
-                  "flex items-center justify-center w-12 h-12 rounded-md shrink-0 border",
+                  "flex items-center justify-center w-12 h-12 sm:w-14 sm:h-14 rounded-md shrink-0 border",
                   "transition-colors duration-150 ease-[cubic-bezier(0.22,1,0.36,1)]",
                   isSelected
                     ? "bg-text-primary border-text-primary text-surface"
@@ -248,7 +248,7 @@ function CategoryContent() {
       </Section>
 
       {/* Action Button */}
-      <div className="pt-space-6 pb-space-2 mt-auto border-t border-border/50">
+      <div className="pt-space-6 sm:pt-space-8 pb-space-2 sm:pb-space-4 mt-auto border-t border-border/50">
         <Button
           variant="primary"
           fullWidth

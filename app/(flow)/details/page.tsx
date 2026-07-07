@@ -461,7 +461,7 @@ function DetailsContent() {
       <h1 className="sr-only">{t("form.title")}</h1>
       
       {/* 1. Selected Category Preview (Double-Bezel Card) */}
-      <div className="bg-surface-variant/40 border border-border p-space-2 rounded-lg">
+      <div className="bg-surface-variant/40 border border-border p-space-2 sm:p-space-3 rounded-lg">
         <div className="bg-surface border border-border rounded-md p-space-3 flex items-center justify-between shadow-sm">
           <div className="flex items-center gap-space-3">
             <div className="flex items-center justify-center w-12 h-12 rounded-md bg-text-primary text-surface shrink-0 border border-border">
@@ -480,7 +480,7 @@ function DetailsContent() {
             type="button"
             variant="secondary"
             onClick={handleCancel}
-            className="!min-h-[44px] !h-[44px] !px-space-3 text-xs rounded-md border border-border-strong hover:bg-surface-variant transition-colors"
+            className="!min-h-[48px] !h-[48px] !px-space-4 text-xs rounded-md border border-border-strong hover:bg-surface-variant transition-colors"
           >
             {t("common.change")}
           </Button>
@@ -549,12 +549,12 @@ function DetailsContent() {
           </div>
 
           {/* Media Attachments Block: Responsive Grid */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-space-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-space-4 sm:gap-space-6">
             
             {/* 3. Photo Upload Card Component (Double-Bezel) */}
             <div 
               className={cn(
-                "bg-surface-variant/40 border border-border p-space-2 rounded-lg transition-[background-color,border-color] duration-150 flex flex-col justify-between min-h-[194px]",
+                "bg-surface-variant/40 border border-border p-space-2 sm:p-space-3 rounded-lg transition-[background-color,border-color] duration-150 flex flex-col justify-between min-h-[194px] sm:min-h-[218px]",
                 isDragging && "border-text-primary bg-surface-variant/70",
                 imageError && "border-error bg-error/5"
               )}
@@ -568,7 +568,7 @@ function DetailsContent() {
                     animate={{ opacity: 1, transform: "scale(1)" }}
                     exit={{ opacity: 0, transform: "scale(0.98)" }}
                     transition={{ duration: 0.15, ease: "easeOut" }}
-                    className="bg-surface border border-border rounded-md overflow-hidden relative min-h-[176px] h-full flex-1 group flex flex-col"
+                    className="bg-surface border border-border rounded-md overflow-hidden relative min-h-[176px] sm:min-h-[194px] h-full flex-1 group flex flex-col"
                   >
                     {/* eslint-disable-next-line @next/next/no-img-element */}
                     <img
@@ -583,7 +583,7 @@ function DetailsContent() {
                         type="button"
                         variant="error"
                         onClick={removePhoto}
-                        className="!min-h-[44px] !h-[44px] !px-space-4 text-xs font-semibold rounded-md flex items-center gap-space-2 border border-error bg-error text-white hover:bg-error/90 active:scale-95 transition-transform btn-hover-group"
+                        className="!min-h-[48px] !h-[48px] !px-space-4 text-xs font-semibold rounded-md flex items-center gap-space-2 border border-error bg-error text-white hover:bg-error/90 active:scale-95 transition-transform btn-hover-group"
                         aria-label={t("form.removePhoto")}
                       >
                         <IconWrapper icon={Trash2} size="micro" className="transition-transform duration-150 btn-hover-scale" />
@@ -613,7 +613,7 @@ function DetailsContent() {
                     onDrop={handleDrop}
                     aria-label={t("form.photoLabel")}
                     className={cn(
-                      "bg-surface border border-dashed border-border-strong rounded-md p-space-4 flex flex-col items-center justify-center text-center cursor-pointer transition-all duration-150 select-none min-h-[176px] relative group outline-none flex-1",
+                      "bg-surface border border-dashed border-border-strong rounded-md p-space-4 sm:p-space-6 flex flex-col items-center justify-center text-center cursor-pointer transition-all duration-150 select-none min-h-[176px] sm:min-h-[194px] relative group outline-none flex-1",
                       "interactive-card focus-visible:border-text-primary",
                       "focus-visible:shadow-[0_0_0_2px_var(--bg),0_0_0_4px_var(--text-primary)]",
                       "motion-safe:active:scale-[0.98]",
@@ -660,7 +660,7 @@ function DetailsContent() {
             </div>
 
             {/* 4. Voice Input Card Component (Double-Bezel) */}
-            <div className="bg-surface-variant/40 border border-border p-space-2 rounded-lg min-h-[194px] flex flex-col justify-between">
+            <div className="bg-surface-variant/40 border border-border p-space-2 sm:p-space-3 rounded-lg min-h-[194px] sm:min-h-[218px] flex flex-col justify-between">
               <AnimatePresence mode="wait">
                 {!isSpeechSupported ? (
                   /* State A: Unsupported Browser */
@@ -670,7 +670,7 @@ function DetailsContent() {
                     animate={{ opacity: 1, transform: "scale(1)" }}
                     exit={{ opacity: 0, transform: "scale(0.98)" }}
                     transition={{ duration: 0.15, ease: "easeOut" }}
-                    className="bg-surface/50 border border-border/80 rounded-md p-space-4 flex flex-col items-center justify-center text-center select-none min-h-[176px] relative opacity-60 flex-1"
+                    className="bg-surface/50 border border-border/80 rounded-md p-space-4 sm:p-space-6 flex flex-col items-center justify-center text-center select-none min-h-[176px] sm:min-h-[194px] relative opacity-60 flex-1"
                     aria-describedby="voice-unsupported-hint"
                   >
                     <div className="flex items-center justify-center w-12 h-12 rounded-full bg-surface-variant border border-border text-text-tertiary mb-space-2">
@@ -702,7 +702,7 @@ function DetailsContent() {
                     }}
                     aria-label={`${t("form.voiceErrorTitle")}. ${t(`form.voiceError${speechError.charAt(0).toUpperCase() + speechError.slice(1)}` || "form.voiceError")}. ${t("form.voiceTryAgain")}`}
                     className={cn(
-                      "bg-surface border border-error/50 rounded-md p-space-4 flex flex-col items-center justify-center text-center cursor-pointer transition-all duration-150 select-none min-h-[176px] relative group outline-none flex-1",
+                      "bg-surface border border-error/50 rounded-md p-space-4 sm:p-space-6 flex flex-col items-center justify-center text-center cursor-pointer transition-all duration-150 select-none min-h-[176px] sm:min-h-[194px] relative group outline-none flex-1",
                       "interactive-card focus-visible:border-error focus-visible:shadow-[0_0_0_2px_var(--bg),0_0_0_4px_var(--error)]",
                       "motion-safe:active:scale-[0.98]"
                     )}
@@ -730,7 +730,7 @@ function DetailsContent() {
                     transition={{ duration: 0.15, ease: "easeOut" }}
                     role="region"
                     aria-label="Voice recording session active"
-                    className="bg-surface border border-border rounded-md p-space-4 flex flex-col items-center justify-center text-center min-h-[176px] relative outline-none flex-1"
+                    className="bg-surface border border-border rounded-md p-space-4 sm:p-space-6 flex flex-col items-center justify-center text-center min-h-[176px] sm:min-h-[194px] relative outline-none flex-1"
                   >
                     {/* Recording Timer Centered in Flow */}
                     <div className="font-mono text-xs font-semibold text-text-secondary bg-surface-variant/80 border border-border px-space-2 py-0.5 rounded-full flex items-center gap-1.5 mb-space-2" aria-label="Recording duration">
@@ -778,7 +778,7 @@ function DetailsContent() {
                         type="button"
                         variant="primary"
                         onClick={handleStopVoice}
-                        className="w-full !min-h-[44px] !h-[44px] !px-space-3 text-xs rounded-md flex items-center justify-center gap-space-1 font-semibold"
+                        className="w-full !min-h-[48px] !h-[48px] !px-space-4 text-xs rounded-md flex items-center justify-center gap-space-1 font-semibold"
                         aria-label={t("form.voiceStop")}
                       >
                         <IconWrapper icon={Check} className="h-3.5 w-3.5" />
@@ -788,7 +788,7 @@ function DetailsContent() {
                         type="button"
                         variant="secondary"
                         onClick={handleCancelVoice}
-                        className="w-full !min-h-[44px] !h-[44px] !px-space-3 text-xs rounded-md border border-border-strong hover:bg-surface-variant flex items-center justify-center gap-space-1 font-semibold"
+                        className="w-full !min-h-[48px] !h-[48px] !px-space-4 text-xs rounded-md border border-border-strong hover:bg-surface-variant flex items-center justify-center gap-space-1 font-semibold"
                         aria-label={t("form.voiceCancel")}
                       >
                         <IconWrapper icon={X} className="h-3.5 w-3.5" />
@@ -815,7 +815,7 @@ function DetailsContent() {
                     }}
                     aria-label={t("form.voiceLabel")}
                     className={cn(
-                      "bg-surface border border-border rounded-md p-space-4 flex flex-col items-center justify-center text-center cursor-pointer transition-all duration-150 select-none min-h-[176px] relative group outline-none flex-1",
+                      "bg-surface border border-border rounded-md p-space-4 sm:p-space-6 flex flex-col items-center justify-center text-center cursor-pointer transition-all duration-150 select-none min-h-[176px] sm:min-h-[194px] relative group outline-none flex-1",
                       "interactive-card focus-visible:border-text-primary",
                       "focus-visible:shadow-[0_0_0_2px_var(--bg),0_0_0_4px_var(--text-primary)]",
                       "motion-safe:active:scale-[0.98]"
@@ -841,7 +841,7 @@ function DetailsContent() {
         </div>
 
         {/* 5. Action Buttons & Navigation */}
-        <div className="pt-space-6 pb-space-2 mt-auto border-t border-border/50 flex flex-col sm:flex-row gap-space-3">
+        <div className="pt-space-6 sm:pt-space-8 pb-space-2 sm:pb-space-4 mt-auto border-t border-border/50 flex flex-col sm:flex-row gap-space-3">
           <Button
             type="button"
             variant="secondary"

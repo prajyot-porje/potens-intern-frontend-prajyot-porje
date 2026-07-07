@@ -44,13 +44,13 @@ export default function FlowLayout({ children }: { children: React.ReactNode }) 
   const showBackButton = pathname === "/details" || pathname === "/confirmation";
 
   return (
-    <div className="flex flex-col flex-1 min-h-screen py-space-4 md:py-space-6 relative">
+    <div className="flex flex-col flex-1 min-h-screen py-space-4 sm:py-space-8 md:py-space-12 relative">
       {/* PWA offline indicator */}
       <OfflineBanner />
       {/* PWA install prompt */}
       <InstallPrompt />
       {/* Header section with theme/lang controls */}
-      <header className="flex items-center justify-between border-b border-border pb-space-4 h-16 min-h-16 relative z-10">
+      <header className="flex items-center justify-between border-b border-border pb-space-4 sm:pb-space-6 h-16 sm:h-20 min-h-[4rem] sm:min-h-[5rem] relative z-10">
         <div className="flex items-center gap-space-2 min-w-[120px]">
           <AnimatePresence mode="wait">
             {mounted && showBackButton ? (
@@ -63,7 +63,7 @@ export default function FlowLayout({ children }: { children: React.ReactNode }) 
               >
                 <Button
                   variant="secondary"
-                  className="!min-h-[44px] !h-[44px] !w-[44px] !p-0 rounded-md border border-border-strong hover:bg-surface-variant transition-transform active:scale-95 flex items-center justify-center"
+                  className="!min-h-[48px] !h-[48px] !w-[48px] !p-0 rounded-md border border-border-strong hover:bg-surface-variant transition-transform active:scale-95 flex items-center justify-center"
                   onClick={handleBack}
                   aria-label={t("common.back")}
                 >
@@ -109,7 +109,7 @@ export default function FlowLayout({ children }: { children: React.ReactNode }) 
           {/* Language Toggle */}
           <Button
             variant="secondary"
-            className="!min-h-[44px] !h-[44px] !px-space-3 text-xs flex items-center gap-space-1"
+            className="!min-h-[48px] !h-[48px] !px-space-4 text-xs flex items-center gap-space-1"
             onClick={cycleLanguage}
             aria-label="Toggle language"
           >
@@ -120,7 +120,7 @@ export default function FlowLayout({ children }: { children: React.ReactNode }) 
           {/* Theme Cycle Toggle */}
           <Button
             variant="secondary"
-            className="!min-h-[44px] !h-[44px] !w-[44px] !p-0 flex items-center justify-center overflow-hidden"
+            className="!min-h-[48px] !h-[48px] !w-[48px] !p-0 flex items-center justify-center overflow-hidden"
             onClick={toggleTheme}
             aria-label="Toggle theme"
           >
@@ -144,12 +144,12 @@ export default function FlowLayout({ children }: { children: React.ReactNode }) 
       </header>
 
       {/* Main Content */}
-      <main className="flex-1 flex flex-col py-space-4">
+      <main className="flex-1 flex flex-col py-space-4 sm:py-space-6 md:py-space-8">
         {children}
       </main>
 
       {/* Footer */}
-      <footer className="border-t border-border pt-space-4 flex justify-between items-center h-12 min-h-12 text-text-secondary">
+      <footer className="border-t border-border pt-space-4 sm:pt-space-6 flex justify-between items-center h-12 sm:h-16 min-h-[3rem] sm:min-h-[4rem] text-text-secondary">
         <ParagraphText variant="caption" className="!text-text-secondary">
           {t("common.appTitle")} · Potens Internship
         </ParagraphText>

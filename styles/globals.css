@@ -29,7 +29,36 @@
   /* Focus Indicator Ring */
   --focus-ring-color: #D1D1D8;
   --focus-ring-shadow: 0 0 0 2px #FAFAFA, 0 0 0 4px #D1D1D8;
+
+  /* Typography - Mobile Defaults */
+  --display-large-size: 3.00rem;
+  --display-medium-size: 2.25rem;
+  --heading-1-size: 1.50rem;
+  --heading-2-size: 1.25rem;
+  --heading-3-size: 1.125rem;
+  --heading-4-size: 1.00rem;
+  --heading-5-size: 0.875rem;
+  --heading-6-size: 0.75rem;
+  --body-large-size: 1.00rem;
+  --body-regular-size: 0.875rem;
+  --ui-label-size: 0.875rem;
+  --caption-size: 0.75rem;
 }
+
+@media (min-width: 768px) {
+  :root {
+    /* Scale typography slightly on desktop (roughly +10%) */
+    --display-large-size: 3.25rem;
+    --display-medium-size: 2.50rem;
+    --heading-1-size: 1.625rem;
+    --heading-2-size: 1.375rem;
+    --heading-3-size: 1.20rem;
+    --body-large-size: 1.05rem;
+    --body-regular-size: 0.925rem;
+    --ui-label-size: 0.925rem;
+  }
+}
+
 
 .dark {
   /* Colors - Dark Theme */
